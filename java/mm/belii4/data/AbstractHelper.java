@@ -67,7 +67,6 @@ public abstract class AbstractHelper {
 
         Log.i("DB", "Insert into " + tableName + ":" + contentValues.getAsString("_id"));
         Boolean output = database.insert(this.tableName, null, contentValues) > 0;
-        database.close();
         return output;
     }
 
@@ -91,7 +90,6 @@ public abstract class AbstractHelper {
 
         Log.i("DB", "Update " + tableName + ":" + whereClause);
         Boolean output = database.update(this.tableName, contentValues, whereClause, whereArgs.toArray(new String[whereArgs.size()])) > 0;
-        database.close();
         return output;
     }
 
@@ -119,7 +117,6 @@ public abstract class AbstractHelper {
         }
         Log.i("DB", "Delete " + tableName + ":" + whereClause);
         Boolean output = database.delete(this.tableName, whereClause, whereArgs.toArray(new String[whereArgs.size()])) > 0;
-        database.close();
         return output;
     }
 
@@ -159,7 +156,7 @@ public abstract class AbstractHelper {
             } while (cursor.moveToNext());
         }
         //fix - android.database.CursorWindowAllocationException Start
-        cursor.close();
+
         //fix - android.database.CursorWindowAllocationException End
         return models;
     }
@@ -190,7 +187,6 @@ public abstract class AbstractHelper {
             model = getModelInstance();
             model.populateWith(cursor, columns);
         }
-        cursor.close();
 
         return model;
     }
