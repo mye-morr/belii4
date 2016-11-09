@@ -1,0 +1,364 @@
+package mm.belii4;
+
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+
+import mm.belii4.data.DatabaseHelper;
+import mm.belii4.data.core.ContactItemHelper;
+import mm.belii4.form.history.HistoryPopulator;
+import mm.belii4.form.schedule.SchedulePopulator;
+import mm.belii4.navigation.DrawerFragment;
+import mm.belii4.scheduler.SchedulerService;
+
+public class MainActivity extends ActionBarActivity
+        implements DrawerFragment.NavigationDrawerCallbacks {
+
+    public static final int PAGE_EVENTS = 1;
+    public static final int PAGE_CONTACTS = 2;
+    public static final int PAGE_MONITOR = 3;
+    public static final int PAGE_HISTORY = 4;
+    public static final int PAGE_GAMES = 5;
+    public static final int PAGE_LIBRARY = 6;
+    public static final int PAGE_PLAYER = 7;
+    public static final int PAGE_TODAY = 8;
+
+    public static final int PAGE_SETTING = 9;
+    public static final int SETTING_RESULT = 2;
+
+    /**
+     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
+     */
+    private DrawerFragment mDrawerFragment;
+
+    /**
+     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
+     */
+    private CharSequence mTitle;
+    private int mIcon;
+    private Integer menuResource;
+
+    //populators
+    private HistoryPopulator historyPopulator;
+    private SchedulePopulator schedulePopulator;
+
+    public int idxSelectedCategory;
+
+    public HistoryPopulator getHistoryPopulator() {
+        return historyPopulator;
+    }
+
+    public SchedulePopulator getSchedulePopulator() {
+        return schedulePopulator;
+    }
+
+    public DrawerFragment getmDrawerFragment() {
+        return mDrawerFragment;
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        idxSelectedCategory = -1;
+
+        //Initialize database helper
+        DatabaseHelper.init(getApplicationContext());
+
+        //service init
+        if (!isServiceRunning(SchedulerService.class)) {
+            startService(new Intent(this, SchedulerService.class));
+        }
+
+        historyPopulator = new HistoryPopulator(this);
+        schedulePopulator = new SchedulePopulator(this);
+
+        mDrawerFragment = (DrawerFragment)
+                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mTitle = getTitle();
+
+        // Set up the drawer.
+        mDrawerFragment.setUp(
+                R.id.navigation_drawer,
+                (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        DatabaseHelper.getInstance().getHelper(ContactItemHelper.class).fetchAndUpdate();
+
+        String messageId = getIntent().getStringExtra("message_id");
+        if (messageId != null) {
+            //@todo open message
+            loadPage(PAGE_HISTORY, true);
+        } else {
+            loadPage(PAGE_LIBRARY, true);
+        }
+    }
+
+    int currentPage = -1;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (currentPage == -1) {
+            loadPage(PAGE_LIBRARY, true);
+        }
+    }
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void onNavigationDrawerItemSelected(int position) {
+        loadPage(position + 1, false);
+    }
+
+    public void loadPage(int pageId, boolean manual) {
+        currentPage = pageId;
+        // update the main content by replacing fragments
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, PlaceholderFragment.newInstance(pageId, this))
+                .commit();
+        if (manual) {
+            onSectionAttached(pageId);
+            supportInvalidateOptionsMenu();
+        }
+    }
+
+    public void onSectionAttached(int number) {
+        switch (number) {
+
+            case PAGE_EVENTS:
+                mTitle = getString(R.string.title_section_events);
+                menuResource = R.menu.menu_events;
+                break;
+
+            case PAGE_CONTACTS:
+                mTitle = getString(R.string.title_section_contacts);
+                menuResource = R.menu.menu_contacts;
+                break;
+
+            case PAGE_MONITOR:
+                mTitle = getString(R.string.title_section_monitor);
+                menuResource = R.menu.menu_monitor;
+                break;
+
+            case PAGE_HISTORY:
+                mTitle = getString(R.string.title_section_history);
+                menuResource = R.menu.menu_history;
+                break;
+
+            case PAGE_GAMES:
+                mTitle = getString(R.string.title_section_game);
+                menuResource = R.menu.menu_games;
+                break;
+
+            case PAGE_LIBRARY:
+                mTitle = getString(R.string.title_section_library);
+                menuResource = R.menu.menu_library;
+                break;
+
+            case PAGE_PLAYER:
+                mTitle = getString(R.string.title_section_player);
+                menuResource = R.menu.menu_blank;
+                break;
+
+            case PAGE_TODAY:
+                mTitle = getString(R.string.title_section_today);
+                menuResource = R.menu.menu_today;
+                break;
+        }
+    }
+
+    public void restoreActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setTitle(mTitle);
+        actionBar.setIcon(mIcon);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //if (!mDrawerFragment.isDrawerOpen()) {
+        // Only show items in the action bar relevant to this screen
+        // if the drawer is not showing. Otherwise, let the drawer
+        // decide what to show in the action bar.
+        if (menuResource != null) {
+            getMenuInflater().inflate(menuResource, menu);
+           /*     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+                switch (menuResource){
+                    case R.menu.menu_history:
+                        if(!settings.getBoolean("help_menu_history", false)) {
+                            new ShowcaseView.Builder(this)
+                                    .setTarget(new ActionItemTarget(this, R.id.action_clear_history))
+                                    .setContentTitle("Clear message history")
+                                    .setContentText("You can clear the message history archive instantly by clicking this Button")
+                                    .hideOnTouchOutside()
+                                    .build();
+                            settings.edit().putBoolean("help_menu_history", true).commit();
+                        }
+                        break;
+                    case R.menu.menu_schedule:
+                        if(!settings.getBoolean("help_menu_schedule", false)) {
+                            new ShowcaseView.Builder(this)
+                                    .setTarget(new ActionItemTarget(this, R.id.action_schedule_new))
+                                    .setContentTitle("Create new Schedule")
+                                    .setContentText("You can create a new SMS Schedule by a wizard by clicking this Button.")
+                                    .hideOnTouchOutside()
+                                    .build();
+                            settings.edit().putBoolean("help_menu_schedule", true).commit();
+                        }
+                        break;
+                }*/
+        }
+        restoreActionBar();
+        //  return true;
+        //}
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        switch (item.getItemId()) {
+            case R.id.action_schedule_new_events:
+                schedulePopulator.setupNew("events");
+                break;
+            case R.id.action_schedule_new_contacts:
+                schedulePopulator.setupNew("contacts");
+                break;
+            case R.id.action_schedule_new_monitor:
+                schedulePopulator.setupNew("monitor");
+                break;
+            case R.id.action_clear_history:
+                historyPopulator.setupClearHistory();
+                break;
+            case R.id.action_clear_games:
+                schedulePopulator.setupClearGames();
+                break;
+            case R.id.action_schedule_new_library:
+                schedulePopulator.setupNew("library");
+                break;
+            case R.id.action_schedule_new_today:
+                schedulePopulator.setupNew("today");
+                break;
+            case R.id.action_settings:
+                startSettingsActivity();
+                currentPage = -1;
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void startSettingsActivity() {
+        startActivityForResult(new Intent(getApplicationContext(), SettingsActivity.class), SETTING_RESULT);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    /**
+     * A placeholder fragment containing a simple view.
+     */
+    public static class PlaceholderFragment extends Fragment {
+        /**
+         * The fragment argument representing the section number for this
+         * fragment.
+         */
+        private static final String ARG_SECTION_NUMBER = "section_number";
+
+        public Context context;
+
+        /**
+         * Returns a new instance of this fragment for the given section
+         * number.
+         */
+        public static PlaceholderFragment newInstance(int sectionNumber, Context context) {
+            PlaceholderFragment fragment = new PlaceholderFragment();
+            fragment.context = context;
+            Bundle args = new Bundle();
+            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View rootView = null;
+            switch (getArguments().getInt(ARG_SECTION_NUMBER)) {
+
+                case PAGE_EVENTS:
+                    rootView = inflater.inflate(R.layout.fragment_schedule_events, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup_events(rootView, "events", -1);
+                    break;
+                case PAGE_CONTACTS:
+                    rootView = inflater.inflate(R.layout.fragment_schedule_contacts, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup_contacts(rootView, "contacts", -1);
+                    break;
+                case PAGE_MONITOR:
+                    rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "monitor");
+                    break;
+                case PAGE_HISTORY:
+                    rootView = inflater.inflate(R.layout.fragment_overview, container, false);
+                    ((MainActivity) context).getHistoryPopulator().setup(rootView, "history");
+                    break;
+                case PAGE_GAMES:
+                    rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup_games(rootView, "games");
+                    break;
+                case PAGE_LIBRARY:
+                    rootView = inflater.inflate(R.layout.fragment_schedule_library, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup_library(rootView, "library", -1);
+                    break;
+                case PAGE_PLAYER:
+                    rootView = inflater.inflate(R.layout.fragment_schedule_player, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup_player(rootView);
+                    break;
+                case PAGE_TODAY:
+                    rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "today");
+                    break;
+                case PAGE_SETTING:
+                    ((MainActivity)context).startSettingsActivity();
+                    ((MainActivity)context).currentPage = -1;
+                    break;
+            }
+            return rootView;
+        }
+
+        @Override
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            ((MainActivity) activity).onSectionAttached(
+                    getArguments().getInt(ARG_SECTION_NUMBER));
+        }
+    }
+}
