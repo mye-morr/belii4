@@ -1,6 +1,7 @@
 package mm.belii4.form;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
@@ -57,6 +58,7 @@ public class NewWizardDialog extends WizardDialog {
     private NonSched nonSched;
     private static DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private static DateFormat timeFormat = new SimpleDateFormat("HH:mm");
 
     @Override
     public void initialize() {
@@ -394,12 +396,65 @@ public class NewWizardDialog extends WizardDialog {
                 }
             });
 
+            ((ImageButton) dialog.findViewById(R.id.new_wizard_1step_contact_time_btn)).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+                    TimePickerDialog timePickerDialog = new TimePickerDialog(context,
+                            new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                            schedule.getNextDue().set(Calendar.HOUR_OF_DAY, hourOfDay);
+                            schedule.getNextDue().set(Calendar.MINUTE, minute);
+                            ((TextView) dialog.findViewById(R.id.new_wizard_1step_contact_time)).setText(timeFormat.format(schedule.getNextDue().getTime()));
+                        }
+                    },
+                            cal.get(Calendar.HOUR),
+                            cal.get(Calendar.MINUTE),
+                            true
+                    );
+                    timePickerDialog.setTitle("Select a time");
+                    timePickerDialog.show();
+                }
+            });
+
+            final EditText etIncr = ((EditText)dialog.findViewById(R.id.new_wizard_1step_incr));
+            etIncr.setText("0");
+
+            final Button btnIncrPlus = ((Button) dialog.findViewById(R.id.new_wizard_1step_incr_plus));
+            final Button btnIncrMinus = ((Button) dialog.findViewById(R.id.new_wizard_1step_incr_minus));
+
+            btnIncrPlus.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int iCurrent = Integer.parseInt(etIncr.getText().toString());
+                    if(iCurrent == 0) {
+                        etIncr.setText(String.valueOf(1));
+                    }
+                    else if (iCurrent > 30) {
+                        etIncr.setText(String.valueOf(iCurrent + 20));
+                    }
+                    else {
+                        etIncr.setText(String.valueOf(iCurrent * 2));
+                    }
+                }
+            });
+
+            btnIncrMinus.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String sIncr = etIncr.getText().toString();
+
+                    if(!sIncr.equals("0")) {
+                        etIncr.setText(String.valueOf(Integer.parseInt(sIncr) - 1));
+                    }
+                }
+            });
+
             ((TextView) dialog.findViewById(R.id.new_wizard_1step_contact_sendDate)).setText(dateFormat.format(schedule.getNextDue().getTime()));
             ((TextView) dialog.findViewById(R.id.new_wizard_1step_contact_message)).setText(schedule.getMessage());
 
-            ((TimePicker)dialog.findViewById(R.id.new_wizard_1step_contact_time)).setCurrentHour(0);
-            ((TimePicker)dialog.findViewById(R.id.new_wizard_1step_contact_time)).setCurrentMinute(0);
-            ((NumberPicker)dialog.findViewById(R.id.new_wizard_1step_contact_numMin)).setMaxValue(200);
+            ((TextView)dialog.findViewById(R.id.new_wizard_1step_contact_time)).setText("00:00");
 
             setRightButton("Add", new View.OnClickListener() {
                 @Override
@@ -410,19 +465,15 @@ public class NewWizardDialog extends WizardDialog {
                     final EditText etMessage = ((EditText)dialog.findViewById(R.id.new_wizard_1step_contact_message));
                     schedule.setMessage(etMessage.getText().toString());
 
-                    final NumberPicker numberPicker = (NumberPicker)dialog.findViewById(R.id.new_wizard_1step_contact_numMin);
-                    final TimePicker timePicker = (TimePicker)dialog.findViewById(R.id.new_wizard_1step_contact_time);
+                    final EditText numberView = (EditText)dialog.findViewById(R.id.new_wizard_1step_incr);
+                    int number = Integer.parseInt(numberView.getText().toString());
 
-                    if(numberPicker.getValue() > 0) {
+                    if(number > 0) {
                         Calendar instCal = Calendar.getInstance();
-                        instCal.add(Calendar.MINUTE, numberPicker.getValue());
+                        instCal.add(Calendar.MINUTE, number);
 
                         schedule.getNextDue().set(Calendar.HOUR_OF_DAY, instCal.get(Calendar.HOUR_OF_DAY));
                         schedule.getNextDue().set(Calendar.MINUTE, instCal.get(Calendar.MINUTE));
-                    }
-                    else {
-                        schedule.getNextDue().set(Calendar.HOUR_OF_DAY, timePicker.getCurrentHour());
-                        schedule.getNextDue().set(Calendar.MINUTE, timePicker.getCurrentMinute());
                     }
 
                     schedule.setRepeatEnable(String.valueOf(false));
