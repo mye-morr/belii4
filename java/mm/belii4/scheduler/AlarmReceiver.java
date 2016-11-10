@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.telephony.SmsManager;
 
@@ -30,13 +31,13 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @Override
     //m/ ALWAYS RUNNING!!!
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
+        final PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
         wl.acquire();
 
         DatabaseHelper.init(context);
-        MessageHelper messageHelper = DatabaseHelper.getInstance().getHelper(MessageHelper.class);
+        final MessageHelper messageHelper = DatabaseHelper.getInstance().getHelper(MessageHelper.class);
 
         // checks frame=_inactive to see which projects
         // are now within their preparation window
@@ -50,6 +51,16 @@ public class AlarmReceiver extends BroadcastReceiver {
         // done manually in history view by clicking a button
         //messageHelper.removeHistoryMessages();
 
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                sendBulkMessage(context, messageHelper, wl);
+                return null;
+            }
+        }.execute();
+    }
+
+    private void sendBulkMessage(Context context, MessageHelper messageHelper, PowerManager.WakeLock wl) {
         //m/ returns only the 'ready' messages
         List<Message> messages = messageHelper.getMessagesFromQueue();
         for (int i = 0; i < messages.size(); i++) {
