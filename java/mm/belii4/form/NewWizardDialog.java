@@ -957,7 +957,7 @@ public class NewWizardDialog extends WizardDialog {
                             }
                         }
                         else {
-                            iHour = Integer.valueOf(sHour.substring(1));
+                            iHour = Integer.valueOf(sHour);
                         }
 
                         schedule.getNextDue().set(Calendar.HOUR_OF_DAY, iHour);
