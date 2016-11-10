@@ -1,18 +1,18 @@
 package mm.belii4;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.IntentCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 /*
 https://developer.android.com/training/permissions/requesting.html
  */
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends Activity {
 
     private static final int MY_PERMISSIONS_REQUEST = 100;
     private static final String[] allRequestedPermissions = new String[] {
@@ -23,7 +23,6 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
 
         if (!checkAllRequestedPermissions()) {
             ActivityCompat.requestPermissions(this, allRequestedPermissions, MY_PERMISSIONS_REQUEST);
