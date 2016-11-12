@@ -397,39 +397,6 @@ public class NewWizardDialog extends WizardDialog {
                 }
             });
 
-            final EditText etIncr = ((EditText)dialog.findViewById(R.id.new_wizard_1step_incr));
-            etIncr.setText("0");
-
-            final Button btnIncrPlus = ((Button) dialog.findViewById(R.id.new_wizard_1step_incr_plus));
-            final Button btnIncrMinus = ((Button) dialog.findViewById(R.id.new_wizard_1step_incr_minus));
-
-            btnIncrPlus.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int iCurrent = Integer.parseInt(etIncr.getText().toString());
-                    if(iCurrent == 0) {
-                        etIncr.setText(String.valueOf(1));
-                    }
-                    else if (iCurrent > 30) {
-                        etIncr.setText(String.valueOf(iCurrent + 20));
-                    }
-                    else {
-                        etIncr.setText(String.valueOf(iCurrent * 2));
-                    }
-                }
-            });
-
-            btnIncrMinus.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    String sIncr = etIncr.getText().toString();
-
-                    if(!sIncr.equals("0")) {
-                        etIncr.setText(String.valueOf(Integer.parseInt(sIncr) - 1));
-                    }
-                }
-            });
-
             ((TextView) dialog.findViewById(R.id.new_wizard_1step_contact_sendDate)).setText(dateFormat.format(schedule.getNextDue().getTime()));
             ((TextView) dialog.findViewById(R.id.new_wizard_1step_contact_message)).setText(schedule.getMessage());
 
