@@ -1,7 +1,6 @@
 package mm.belii4.form;
 
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
@@ -293,7 +292,9 @@ public class NewWizardDialog extends WizardDialog {
         public void setup() {
             super.setup();
 
-            updateContactTags();
+            if(schedule.getReceiver().length() > 0) {
+                updateContactTags();
+            }
 
             final Spinner spinCat = ((Spinner)dialog.findViewById(R.id.contacts_category));
             spinCat.setSelection(schedule.getSubCatSelected(contactCategories));
@@ -396,28 +397,6 @@ public class NewWizardDialog extends WizardDialog {
                 }
             });
 
-            ((ImageButton) dialog.findViewById(R.id.new_wizard_1step_contact_time_btn)).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-                    TimePickerDialog timePickerDialog = new TimePickerDialog(context,
-                            new TimePickerDialog.OnTimeSetListener() {
-                        @Override
-                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                            schedule.getNextDue().set(Calendar.HOUR_OF_DAY, hourOfDay);
-                            schedule.getNextDue().set(Calendar.MINUTE, minute);
-                            ((TextView) dialog.findViewById(R.id.new_wizard_1step_contact_time)).setText(timeFormat.format(schedule.getNextDue().getTime()));
-                        }
-                    },
-                            cal.get(Calendar.HOUR),
-                            cal.get(Calendar.MINUTE),
-                            true
-                    );
-                    timePickerDialog.setTitle("Select a time");
-                    timePickerDialog.show();
-                }
-            });
-
             final EditText etIncr = ((EditText)dialog.findViewById(R.id.new_wizard_1step_incr));
             etIncr.setText("0");
 
@@ -454,7 +433,9 @@ public class NewWizardDialog extends WizardDialog {
             ((TextView) dialog.findViewById(R.id.new_wizard_1step_contact_sendDate)).setText(dateFormat.format(schedule.getNextDue().getTime()));
             ((TextView) dialog.findViewById(R.id.new_wizard_1step_contact_message)).setText(schedule.getMessage());
 
-            ((TextView)dialog.findViewById(R.id.new_wizard_1step_contact_time)).setText("00:00");
+            ((TimePicker)dialog.findViewById(R.id.new_wizard_1step_contact_time)).setCurrentHour(0);
+            ((TimePicker)dialog.findViewById(R.id.new_wizard_1step_contact_time)).setCurrentMinute(0);
+            ((NumberPicker)dialog.findViewById(R.id.new_wizard_1step_contact_numMin)).setMaxValue(200);
 
             setRightButton("Add", new View.OnClickListener() {
                 @Override
@@ -465,15 +446,19 @@ public class NewWizardDialog extends WizardDialog {
                     final EditText etMessage = ((EditText)dialog.findViewById(R.id.new_wizard_1step_contact_message));
                     schedule.setMessage(etMessage.getText().toString());
 
-                    final EditText numberView = (EditText)dialog.findViewById(R.id.new_wizard_1step_incr);
-                    int number = Integer.parseInt(numberView.getText().toString());
+                    final NumberPicker numberPicker = (NumberPicker)dialog.findViewById(R.id.new_wizard_1step_contact_numMin);
+                    final TimePicker timePicker = (TimePicker)dialog.findViewById(R.id.new_wizard_1step_contact_time);
 
-                    if(number > 0) {
+                    if(numberPicker.getValue() > 0) {
                         Calendar instCal = Calendar.getInstance();
-                        instCal.add(Calendar.MINUTE, number);
+                        instCal.add(Calendar.MINUTE, numberPicker.getValue());
 
                         schedule.getNextDue().set(Calendar.HOUR_OF_DAY, instCal.get(Calendar.HOUR_OF_DAY));
                         schedule.getNextDue().set(Calendar.MINUTE, instCal.get(Calendar.MINUTE));
+                    }
+                    else {
+                        schedule.getNextDue().set(Calendar.HOUR_OF_DAY, timePicker.getCurrentHour());
+                        schedule.getNextDue().set(Calendar.MINUTE, timePicker.getCurrentMinute());
                     }
 
                     schedule.setRepeatEnable(String.valueOf(false));

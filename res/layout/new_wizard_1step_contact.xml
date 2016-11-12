@@ -129,54 +129,27 @@
 
     </LinearLayout>
 
-    <LinearLayout
+        <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical">
 
-        <TextView
+            <TimePicker android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/new_wizard_1step_contact_time"
+            android:layout_marginLeft="5dp"
+            android:layout_gravity="center"
+            android:timePickerMode="spinner"
+            />
+
+            <NumberPicker
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="HH:mm"
-            android:id="@+id/new_wizard_1step_contact_time"
-            android:layout_marginRight="158dp"
-            android:layout_gravity="center_vertical"
-            android:textSize="18dp"
-            android:paddingLeft="10dp" />
+            android:layout_marginTop="15dp"
+            android:layout_marginLeft="15dp"
+            android:id="@+id/new_wizard_1step_contact_numMin" />
 
-        <ImageButton
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:id="@+id/new_wizard_1step_contact_time_btn"
-            android:layout_marginLeft="-60dp"
-            android:layout_gravity="center_vertical"
-            android:src="@drawable/calendar"
-            android:background="@android:color/transparent" />
-
-        <Button
-            android:layout_width="30dp"
-            android:layout_height="wrap_content"
-            android:text="-"
-            android:id="@+id/new_wizard_1step_incr_minus"
-            android:layout_marginLeft="10dp"
-            />
-
-        <EditText
-            android:layout_width="30dp"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:ems="10"
-            android:id="@+id/new_wizard_1step_incr"
-            android:textAlignment="center" />
-
-        <Button
-            android:layout_width="30dp"
-            android:layout_height="wrap_content"
-            android:text="+"
-            android:id="@+id/new_wizard_1step_incr_plus"
-            />
-
-    </LinearLayout>
+        </LinearLayout>
 
 </LinearLayout>
