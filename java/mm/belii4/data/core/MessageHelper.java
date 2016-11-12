@@ -73,19 +73,6 @@ public class MessageHelper extends AbstractHelper{
                         calWorking.add(Calendar.MINUTE, remindInterval);
                         schedule.setNextExecute(calWorking);
 
-                        ///////////////////////////////
-                        ///////////////////////////////
-                        Games game = new Games();
-                        game.setCat("games");
-                        game.setSubcat("");
-                        game.setName("self");
-                        game.setContent(schedule.getMessage());
-                        game.setTimestamp(Calendar.getInstance());
-
-                        DatabaseHelper.getInstance().getHelper(GamesHelper.class).createOrUpdate(game);
-                        ///////////////////////////////
-                        ///////////////////////////////
-
                         bSentFirstSelfMsg = true;
                     }
                 }
