@@ -31,12 +31,18 @@ public class GamesListAdapter extends ArrayAdapter<Games> {
         convertView = initView(convertView);
 
         Games game = games.get(position);
+        String sCat = game.getCat();
         String sPts = game.getPts();
+
+        if (sCat.length() > 0) {
+            sCat = sCat + ": ";
+        }
+
         if (sPts.length() > 0) {
             sPts = " (" + sPts + ")";
         }
 
-        ((TextView) convertView.findViewById(R.id.schedule_item_summary)).setText(game.getContent() + sPts);
+        ((TextView) convertView.findViewById(R.id.schedule_item_summary)).setText(sCat + game.getContent() + sPts);
 
             if(games.get(position).get_state().equalsIgnoreCase("active")) {
                 ((ImageView) convertView.findViewById(R.id.schedule_item_icon)).setImageResource(R.drawable.schedule_single);

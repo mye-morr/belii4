@@ -32,11 +32,13 @@ public class NonSchedListAdapter extends ArrayAdapter<NonSched> {
 
         String sLabel = "";
         String nsType = nonSched.get(position).getType();
-        if(nsType.equalsIgnoreCase("PLAYER")) {
-            sLabel = nonSched.get(position).getName();
+
+        // see NewWizardDialog: DialogStep_1Step_Events
+        if(nsType.equalsIgnoreCase("COMTAS")) {
+            sLabel = nonSched.get(position).getName() + " -= " + nonSched.get(position).getContent();
         }
         else {
-            sLabel = nonSched.get(position).getName() + " -= " + nonSched.get(position).getContent();
+            sLabel = nonSched.get(position).getContent();
         }
 
         ((TextView) convertView.findViewById(R.id.schedule_item_summary)).setText(sLabel);

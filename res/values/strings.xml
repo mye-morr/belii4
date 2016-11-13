@@ -17,6 +17,7 @@
     <string name="action_settings">Settings</string>
     <string name="action_foo">Foo</string>
     <string name="action_schedule_new">New</string>
+    <string name="action_schedule_refresh">Refresh</string>
     <string name="action_clear_history">Clear</string>
 
     <string name="message_not_delivered">Message not delivered</string>

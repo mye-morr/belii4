@@ -4,26 +4,25 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import java.util.Calendar;
+
+import mm.belii4.data.DatabaseHelper;
+import mm.belii4.data.core.Games;
+import mm.belii4.data.core.GamesHelper;
+
 public class ButtonsReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        /* sample code to update log
-        ///////////////////////////////
-        ///////////////////////////////
         Games game = new Games();
-        game.setCat("games");
+        game.setCat(intent.getStringExtra("CATEGORY_PRESSED"));
         game.setSubcat("");
-        game.setName("self");
-        game.setContent(schedule.getMessage());
+        game.setContent(intent.getStringExtra("STRING_PRESSED"));
+        game.setPts(intent.getStringExtra("POINTS_PRESSED"));
         game.setTimestamp(Calendar.getInstance());
 
         DatabaseHelper.getInstance().getHelper(GamesHelper.class).createOrUpdate(game);
-        ///////////////////////////////
-        ///////////////////////////////
-        */
-
     }
 
 }

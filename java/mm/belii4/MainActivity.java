@@ -245,6 +245,9 @@ public class MainActivity extends ActionBarActivity
         // as you specify a parent activity in AndroidManifest.xml.
 
         switch (item.getItemId()) {
+            case R.id.action_refresh:
+                schedulePopulator.resetup();
+                break;
             case R.id.action_schedule_new_events:
                 schedulePopulator.setupNew("events");
                 break;

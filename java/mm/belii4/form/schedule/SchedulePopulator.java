@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Random;
 
 import mm.belii4.MainActivity;
 import mm.belii4.R;
@@ -961,7 +960,7 @@ public class SchedulePopulator extends AbstractPopulator {
 
         final Spinner spinCategory = ((Spinner)rootView.findViewById(R.id.player_category));
         final Spinner spinSubCategory = ((Spinner)rootView.findViewById(R.id.player_subcategory));
-        final ListView listViewSt = ((ListView) rootView.findViewById(R.id.schedule_player_list));
+        final ListView listViewLibrary = ((ListView) rootView.findViewById(R.id.schedule_library_list));
 
         ArrayAdapter<String> adapterCategory = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, lsCategories);
         adapterCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -1136,7 +1135,7 @@ public class SchedulePopulator extends AbstractPopulator {
                 };
 
                 nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat2);
-                listViewSt.setAdapter(new NonSchedListAdapter(context, nonSched));
+                listViewLibrary.setAdapter(new NonSchedListAdapter(context, nonSched));
             }
 
             @Override
@@ -1144,10 +1143,10 @@ public class SchedulePopulator extends AbstractPopulator {
             }
        });
 
-        listViewSt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listViewLibrary.setOnItemClickListener(new AdapterView.OnItemClickListener() {
               @Override
               public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-              final NonSched st = (NonSched) listViewSt.getItemAtPosition(i);
+              final NonSched st = (NonSched) listViewLibrary.getItemAtPosition(i);
               AlertDialog.Builder alertOptions = new AlertDialog.Builder(context);
               List<String> optsList = new ArrayList<String>();
 
@@ -1178,76 +1177,6 @@ public class SchedulePopulator extends AbstractPopulator {
                           dialogInterface.dismiss();
 
                       }
-                      else if (options[i].equalsIgnoreCase("ADD TO SCHED")) {
-                          AlertDialog.Builder addToSched = new AlertDialog.Builder(context);
-                          addToSched.setTitle("Interval");
-                          addToSched.setMessage("Repeat every (approx.)?");
-                          final EditText input = new EditText(context);
-                          addToSched.setView(input);
-
-                          addToSched.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-
-                              // eventually this will be adding
-                              // to an array/list of active st, which are treated as flashcards
-                              // and rotated based on time-schedule distribution etc.
-
-                              @Override
-                              public void onClick(DialogInterface dialog, int which) {
-                                Schedule addSched = new Schedule();
-
-                                  // recipient doesn't matter because
-                                  // these messages will only be broadcast
-                                  addSched.setReceiver("");
-                                  addSched.setReceiverName("");
-                                  addSched.setCategory(sCat);
-                                  addSched.setMessage(st.getContent());
-
-                                  Calendar calWorking = Calendar.getInstance();
-
-                                  addSched.getNextDue().set(
-                                          calWorking.get(Calendar.YEAR),
-                                          calWorking.get(Calendar.MONTH),
-                                          calWorking.get(Calendar.DATE),
-                                          calWorking.get(Calendar.HOUR_OF_DAY),
-                                          calWorking.get(Calendar.MINUTE) + 1);
-
-                                  Random rand = new Random();
-                                  addSched.setRemindInterval(input.getText().toString());
-                                  addSched.set_state("active");
-                                  addSched.setPrepCount("0");
-
-                                  //m/ temporary, until find a place in ui
-                                  addSched.setRepeatInflexible(String.valueOf(true));
-                                  addSched.setRepeatEnable(String.valueOf(false));
-                                  addSched.setRepeatValue("");
-                                  addSched.setRepeatType("");
-
-                                  addSched.set_frame("");
-                                  addSched.setPrepWindow("");
-                                  addSched.setPrepWindowType("");
-
-                                  addSched.setNextExecute(addSched.getNextDue());
-
-                                  // returns boolean
-                                  if (DatabaseHelper.getInstance().getHelper(ScheduleHelper.class).createOrUpdate(addSched)) {
-                                      Toast.makeText(context, "SMS Schedule saved.", Toast.LENGTH_SHORT).show();
-                                  } else {
-                                      Toast.makeText(context, "SMS Schedule saving failed.", Toast.LENGTH_SHORT).show();
-                                  }
-
-                                  setup_library(rootView, sCat, ((MainActivity)context).idxSelectedCategory);
-                              }
-                          });
-
-                          addToSched.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                              @Override
-                              public void onClick(DialogInterface dialog, int which) {
-                                  dialog.cancel();
-                              }
-                          });
-
-                          addToSched.show();
-                      }
                   }
               });
 
@@ -1262,128 +1191,6 @@ public class SchedulePopulator extends AbstractPopulator {
 
           }
       });
-
-        List<Schedule> schedules;
-        schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", sCat);
-        final ListView listView = ((ListView) rootView.findViewById(R.id.schedule_list));
-        listView.setAdapter(new ScheduleListAdapter(context, schedules));
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final Schedule schedule = (Schedule) listView.getItemAtPosition(i);
-                AlertDialog.Builder alertOptions = new AlertDialog.Builder(context);
-                List<String> optsList = new ArrayList<String>();
-
-                optsList.add("Edit");
-                optsList.add("Postpone");
-
-                if (schedule.get_state().equalsIgnoreCase("active")) {
-                    optsList.add("Deactivate");
-                } else if (schedule.get_state().equalsIgnoreCase("inactive")) {
-                    optsList.add("Activate");
-                }
-
-                optsList.add("Delete");
-
-                optsList.add("Show Details");
-
-                final String[] options = optsList.toArray(new String[]{});
-                alertOptions.setAdapter(new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, android.R.id.text1, options), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                        if (options[i].equalsIgnoreCase("POSTPONE")) {
-                            AlertDialog.Builder postponeMinutes = new AlertDialog.Builder(context);
-                            postponeMinutes.setTitle("Postpone");
-                            postponeMinutes.setMessage("Minutes; varia");
-                            final EditText input = new EditText(context);
-                            postponeMinutes.setView(input);
-
-                            postponeMinutes.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Calendar nextExecute = schedule.getNextExecute();
-                                    nextExecute.add(Calendar.MINUTE, Integer.parseInt(input.getText().toString()));
-                                    schedule.setNextExecute(nextExecute);
-                                    scheduleHelper.update(schedule);
-                                }
-                            });
-                            postponeMinutes.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.cancel();
-                                }
-                            });
-
-                            postponeMinutes.show();
-
-                        } else if (options[i].equalsIgnoreCase("EDIT")) {
-                            new NewWizardDialog(context, schedule).show();
-                        } else if (options[i].equalsIgnoreCase("DELETE")) {
-                            Toast.makeText(context, "Schedule deleted.", Toast.LENGTH_SHORT).show();
-                            scheduleHelper.delete(schedule.get_id());
-                            ((MainActivity) context).getSchedulePopulator().resetup();
-                            dialogInterface.dismiss();
-                        } else if (options[i].equalsIgnoreCase("ACTIVATE")) {
-                            schedule.set_state("active");
-                            //fix - Multiple duplication of schedules Start
-                            scheduleHelper.update(schedule);
-                            //fix - Multiple duplication of schedules End
-                            ((MainActivity) context).getSchedulePopulator().resetup();
-                        } else if (options[i].equalsIgnoreCase("DEACTIVATE")) {
-                            schedule.set_state("inactive");
-                            //fix - Multiple duplication of schedules Start
-                            scheduleHelper.update(schedule);
-                            //fix - Multiple duplication of schedules End
-                            ((MainActivity) context).getSchedulePopulator().resetup();
-                        } else if (options[i].equalsIgnoreCase("SHOW DETAILS")) {
-                            AlertDialog.Builder showDetails = new AlertDialog.Builder(context);
-                            showDetails.setTitle("Show Details");
-
-                            int iMinutesNextDue = schedule.getNextDue().get(Calendar.MINUTE);
-                            String sMinutesNextDue = iMinutesNextDue < 10 ? "0" + String.valueOf(iMinutesNextDue) : String.valueOf(iMinutesNextDue);
-
-                            int iMinutesNextExecute = schedule.getNextExecute().get(Calendar.MINUTE);
-                            String sMinutesNextExecute = iMinutesNextExecute < 10 ? "0" + String.valueOf(iMinutesNextExecute) : String.valueOf(iMinutesNextExecute);
-
-                            showDetails.setMessage("frame: " + schedule.get_frame()
-                                    + "\n" + "state: " + schedule.get_state()
-                                    + "\n" + "repeatEnabled: " + schedule.getRepeatEnable()
-                                    + "\n" + "repeatEvery: " + schedule.getRepeatValue() + " " + schedule.getRepeatType()
-                                    + "\n" + "prepWindow: " + schedule.getPrepWindow()
-                                    + "\n" + "prepWindowType: " + schedule.getPrepWindowType()
-                                    + "\n" + "prepCount: " + schedule.getPrepCount()
-                                    + "\n" + "nD: " + String.valueOf(schedule.getNextDue().get(Calendar.MONTH) + 1) + "/" + String.valueOf(schedule.getNextDue().get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(schedule.getNextDue().get(Calendar.YEAR)) + " " + String.valueOf(schedule.getNextDue().get(Calendar.HOUR_OF_DAY)) + ":" + sMinutesNextDue
-                                    + "\n" + "nE: " + String.valueOf(schedule.getNextExecute().get(Calendar.MONTH) + 1) + "/" + String.valueOf(schedule.getNextExecute().get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(schedule.getNextExecute().get(Calendar.YEAR)) + " " + String.valueOf(schedule.getNextExecute().get(Calendar.HOUR_OF_DAY)) + ":" + sMinutesNextExecute
-                            );
-
-                            showDetails.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.cancel();
-                                }
-                            });
-                            showDetails.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.cancel();
-                                }
-                            });
-
-                            showDetails.show();
-                        }
-                    }
-                });
-                alertOptions.setCancelable(true);
-                alertOptions.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                });
-                alertOptions.show();
-            }
-        });
     }
 
     public void setup_player(final View rootView) {
@@ -1530,8 +1337,8 @@ public class SchedulePopulator extends AbstractPopulator {
             public void onClick(DialogInterface dialogInterface, int i) {
                 List<SearchEntry> keys = new ArrayList<SearchEntry>();
                 List<String> listCat = new ArrayList<String>();
-                listCat.add("games");
-                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.IN, listCat));
+                listCat.add("%");
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.LIKE, listCat));
                 gamesHelper.delete(keys);
                 ((MainActivity) context).getSchedulePopulator().resetup();
             }
