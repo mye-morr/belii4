@@ -789,7 +789,7 @@ public class NewWizardDialog extends WizardDialog {
                     String sComTas = ((EditText) dialog.findViewById(R.id.new_wizard_1step_comTas)).getText().toString();
 
                     // don't waste processing
-                    if(sComTas.length() > 5) {
+                    if(sComTas.length() <= 5) {
                         updateComTasList(sComTas);
                     }
                 }
