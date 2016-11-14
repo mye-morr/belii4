@@ -37,6 +37,9 @@ public class NonSchedListAdapter extends ArrayAdapter<NonSched> {
         if(nsType.equalsIgnoreCase("COMTAS")) {
             sLabel = nonSched.get(position).getName() + " -= " + nonSched.get(position).getContent();
         }
+        else if(nsType.equalsIgnoreCase("PLAYER")) {
+            sLabel = nonSched.get(position).getName();
+        }
         else {
             sLabel = nonSched.get(position).getContent();
         }
