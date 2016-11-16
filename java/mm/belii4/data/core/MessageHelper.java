@@ -13,7 +13,7 @@ import mm.belii4.data.AbstractHelper;
 import mm.belii4.data.AbstractModel;
 import mm.belii4.data.DatabaseHelper;
 
-public class MessageHelper extends AbstractHelper{
+public class MessageHelper extends AbstractHelper<Message>{
 
     public MessageHelper(Context context) {
         super(context);
@@ -29,14 +29,14 @@ public class MessageHelper extends AbstractHelper{
     }
 
     @Override
-    protected AbstractModel getModelInstance() {
+    protected Message getModelInstance() {
         return new Message();
     }
 
     @Override
     public AbstractModel populateRelations(AbstractModel abstractModel) {
         Message message = (Message)super.populateRelations(abstractModel);
-        Schedule schedule = (Schedule)DatabaseHelper.getInstance().getHelper(MessageHelper.class).getBy("_id", message.getScheduleId());
+        Schedule schedule = (Schedule)DatabaseHelper.getInstance().getHelper(ScheduleHelper.class).getBy("_id", message.getScheduleId());
         message.setSchedule(schedule);
         return message;
     }

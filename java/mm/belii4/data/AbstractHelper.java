@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public abstract class AbstractHelper {
+public abstract class AbstractHelper <T extends AbstractModel> {
 
     protected String tableName;
     protected List<String> columns;
@@ -28,7 +28,7 @@ public abstract class AbstractHelper {
         columns.add("_state VARCHAR(20)");
     }
 
-    protected abstract AbstractModel getModelInstance();
+    protected abstract T getModelInstance();
 
     public AbstractModel populateRelations(AbstractModel abstractModel){
         return abstractModel;
@@ -55,7 +55,7 @@ public abstract class AbstractHelper {
         onCreate(db);
     }
 
-    public boolean create(AbstractModel model) {
+    public boolean create(T model) {
         SQLiteDatabase database = this.databaseHelper.getWritableDatabase();
         ContentValues contentValues = model.getContentValues();
         if(contentValues.getAsString("_id") == null){
@@ -70,7 +70,7 @@ public abstract class AbstractHelper {
         return output;
     }
 
-    public boolean update(List<SearchEntry> keys, AbstractModel model){
+    public boolean update(List<SearchEntry> keys, T model){
         SQLiteDatabase database = this.databaseHelper.getWritableDatabase();
         String whereClause = "";
         List<String> whereArgs = new ArrayList<String>();
@@ -120,12 +120,12 @@ public abstract class AbstractHelper {
         return output;
     }
 
-    public List<AbstractModel> findAll(){
+    public List<T> findAll(){
         List<SearchEntry> searchEntries = new ArrayList<SearchEntry>();
         return find(searchEntries);
     }
 
-    public List<AbstractModel> find(List<SearchEntry> keys){
+    public List<T> find(List<SearchEntry> keys){
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
         String whereClause = "";
         List<String> whereArgs = new ArrayList<String>();
@@ -147,10 +147,10 @@ public abstract class AbstractHelper {
         Log.i("DB", sql);
         Cursor cursor = database.rawQuery(sql, whereArgs.toArray(new String[whereArgs.size()]));
 
-        List<AbstractModel> models = new ArrayList<AbstractModel>();
+        List<T> models = new ArrayList<T>();
         if(cursor.moveToFirst()){
             do {
-                AbstractModel model = getModelInstance();
+                T model = getModelInstance();
                 model.populateWith(cursor, this.columns);
                 models.add(model);
             } while (cursor.moveToNext());
@@ -162,7 +162,7 @@ public abstract class AbstractHelper {
     }
 
     // single record using SearchEntry key
-    public AbstractModel get(List<SearchEntry> keys){
+    public T get(List<SearchEntry> keys){
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
         String whereClause = "";
         List<String> whereArgs = new ArrayList<String>();
@@ -182,7 +182,7 @@ public abstract class AbstractHelper {
         Log.i("DB", sql);
         Cursor cursor = database.rawQuery(sql, whereArgs.toArray(new String[whereArgs.size()]));
 
-        AbstractModel model = null;
+        T model = null;
         if(cursor.moveToFirst()){
             model = getModelInstance();
             model.populateWith(cursor, columns);
@@ -191,31 +191,31 @@ public abstract class AbstractHelper {
         return model;
     }
 
-    public List<AbstractModel> findBy(String name, int value){
+    public List<T> findBy(String name, int value){
         List<SearchEntry> keys = new ArrayList<SearchEntry>();
         keys.add(new SearchEntry(SearchEntry.Type.NUMBER, name, SearchEntry.Search.EQUAL, String.valueOf(value)));
         return this.find(keys);
     }
 
-    public List<AbstractModel> findBy(String name, String value){
+    public List<T> findBy(String name, String value){
         List<SearchEntry> keys = new ArrayList<SearchEntry>();
         keys.add(new SearchEntry(SearchEntry.Type.STRING, name, SearchEntry.Search.EQUAL, String.valueOf(value)));
         return this.find(keys);
     }
 
-    public AbstractModel getBy(String name, int value){
+    public T getBy(String name, int value){
         List<SearchEntry> keys = new ArrayList<SearchEntry>();
         keys.add(new SearchEntry(SearchEntry.Type.NUMBER, name, SearchEntry.Search.EQUAL, String.valueOf(value)));
         return this.get(keys);
     }
 
-    public AbstractModel getBy(String name, String value){
+    public T getBy(String name, String value){
         List<SearchEntry> keys = new ArrayList<SearchEntry>();
         keys.add(new SearchEntry(SearchEntry.Type.STRING, name, SearchEntry.Search.EQUAL, String.valueOf(value)));
         return this.get(keys);
     }
 
-    public boolean update(AbstractModel model) {
+    public boolean update(T model) {
         ArrayList<SearchEntry> keys = new ArrayList<SearchEntry>();
         keys.add(new SearchEntry(SearchEntry.Type.STRING, "_id", SearchEntry.Search.EQUAL, model.get_id()));
         if(get(keys) != null){
@@ -225,7 +225,7 @@ public abstract class AbstractHelper {
         }
     }
 
-    public boolean createOrUpdate(AbstractModel model) {
+    public boolean createOrUpdate(T model) {
         ArrayList<SearchEntry> keys = new ArrayList<SearchEntry>();
         keys.add(new SearchEntry(SearchEntry.Type.STRING, "_id", SearchEntry.Search.EQUAL, model.get_id()));
         if(get(keys) == null){

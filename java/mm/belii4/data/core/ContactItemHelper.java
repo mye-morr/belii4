@@ -15,7 +15,7 @@ import mm.belii4.data.AbstractHelper;
 import mm.belii4.data.AbstractModel;
 import mm.belii4.data.SearchEntry;
 
-public class ContactItemHelper extends AbstractHelper{
+public class ContactItemHelper extends AbstractHelper<ContactItem>{
 
     public ContactItemHelper(Context context) {
         super(context);
@@ -30,7 +30,7 @@ public class ContactItemHelper extends AbstractHelper{
     }
 
     @Override
-    protected AbstractModel getModelInstance() {
+    protected ContactItem getModelInstance() {
         return new ContactItem();
     }
 
@@ -45,7 +45,7 @@ public class ContactItemHelper extends AbstractHelper{
     }
 
     @Override
-    public List<AbstractModel> find(List<SearchEntry> keys) {
+    public List<ContactItem> find(List<SearchEntry> keys) {
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
         String whereClause = "";
         List<String> whereArgs = new ArrayList<String>();
@@ -67,10 +67,10 @@ public class ContactItemHelper extends AbstractHelper{
         Log.i("DB", sql);
         Cursor cursor = database.rawQuery(sql, whereArgs.toArray(new String[whereArgs.size()]));
 
-        List<AbstractModel> models = new ArrayList<AbstractModel>();
+        List<ContactItem> models = new ArrayList<>();
         if(cursor.moveToFirst()){
             do {
-                AbstractModel model = getModelInstance();
+                ContactItem model = getModelInstance();
                 model.populateWith(cursor, this.columns);
                 models.add(model);
             } while (cursor.moveToNext());

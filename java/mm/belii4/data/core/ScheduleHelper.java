@@ -5,7 +5,7 @@ import android.content.Context;
 import mm.belii4.data.AbstractHelper;
 import mm.belii4.data.AbstractModel;
 
-public class ScheduleHelper extends AbstractHelper{
+public class ScheduleHelper extends AbstractHelper<Schedule>{
 
     public ScheduleHelper(Context context) {
         super(context);
@@ -30,7 +30,7 @@ public class ScheduleHelper extends AbstractHelper{
     }
 
     @Override
-    protected AbstractModel getModelInstance() {
+    protected Schedule getModelInstance() {
         return new Schedule();
     }
 }

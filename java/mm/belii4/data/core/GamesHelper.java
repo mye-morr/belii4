@@ -5,7 +5,7 @@ import android.content.Context;
 import mm.belii4.data.AbstractHelper;
 import mm.belii4.data.AbstractModel;
 
-public class GamesHelper extends AbstractHelper{
+public class GamesHelper extends AbstractHelper<Games>{
 
     public GamesHelper(Context context) {
         super(context);
@@ -19,7 +19,7 @@ public class GamesHelper extends AbstractHelper{
     }
 
     @Override
-    protected AbstractModel getModelInstance() {
+    protected Games getModelInstance() {
         return new Games();
     }
 
