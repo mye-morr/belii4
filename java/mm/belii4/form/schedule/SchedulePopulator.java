@@ -68,16 +68,16 @@ public class SchedulePopulator extends AbstractPopulator {
         super.setup(rootView, category);
 
         if(category.equals("events")) {
-            setup_events(rootView, category, ((MainActivity)context).idxSelectedCategory);
+            setup_events(rootView, category);
         }
         else if(category.equals("contacts")) {
-            setup_contacts(rootView, category, ((MainActivity) context).idxSelectedCategory);
+            setup_contacts(rootView, category);
         }
         else if(category.equals("games")) {
             setup_games(rootView, category);
         }
         else if(category.equals("library")) {
-            setup_library(rootView, category, ((MainActivity)context).idxSelectedCategory);
+            setup_library(rootView, category);
         }
         else if(category.equals("player")) {
             setup_player(rootView);
@@ -255,7 +255,7 @@ public class SchedulePopulator extends AbstractPopulator {
         });
     }
 
-    public void setup_events(final View rootView, String category, int idxSelectedCategory) {
+    public void setup_events(final View rootView, String category) {
         super.setup(rootView, category);
 
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
@@ -282,16 +282,12 @@ public class SchedulePopulator extends AbstractPopulator {
         adapterCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinCategory.setAdapter(adapterCategory);
 
-        if (idxSelectedCategory > -1)
-            spinCategory.setSelection(idxSelectedCategory);
-
         final View dialog = rootView;
         final String sCat = category;
         spinCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-                ((MainActivity)context).idxSelectedCategory = ((Spinner) dialog.findViewById(R.id.events_category)).getSelectedItemPosition();
                 String sCat2 = ((Spinner) dialog.findViewById(R.id.events_category)).getSelectedItem().toString();
 
                 List<Schedule> schedules = new List<Schedule>() {
@@ -597,7 +593,7 @@ public class SchedulePopulator extends AbstractPopulator {
         });
     }
 
-    public void setup_contacts(final View rootView, String category, int idxSelectedCategory) {
+    public void setup_contacts(final View rootView, String category) {
         super.setup(rootView, category);
 
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
@@ -624,16 +620,12 @@ public class SchedulePopulator extends AbstractPopulator {
         adapterCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinCategory.setAdapter(adapterCategory);
 
-        if (idxSelectedCategory > -1)
-            spinCategory.setSelection(idxSelectedCategory);
-
         final View dialog = rootView;
         final String sCat = category;
         spinCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-                ((MainActivity)context).idxSelectedCategory = ((Spinner) dialog.findViewById(R.id.contacts_category)).getSelectedItemPosition();
                 String sCat2 = ((Spinner) dialog.findViewById(R.id.contacts_category)).getSelectedItem().toString();
 
                 List<Schedule> schedules = new List<Schedule>() {
@@ -939,18 +931,22 @@ public class SchedulePopulator extends AbstractPopulator {
         });
     }
 
-    public void setup_library(final View rootView, String category, int idxSelectedCategory) {
+    public void setup_library(final View rootView, String category) {
         super.setup(rootView, category);
+
+        final ListView listViewCategory = ((ListView) rootView.findViewById(R.id.schedule_category_list));
+        final ListView listViewSubcategory = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
+        final ListView listViewLibrary = ((ListView) rootView.findViewById(R.id.schedule_library_list));
 
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
 
-        String sql = "SELECT DISTINCT cat FROM core_tbl_nonsched WHERE type='st' ORDER BY cat";
+        String sql = "SELECT DISTINCT cat FROM core_tbl_nonsched WHERE type='library' ORDER BY cat";
         Cursor cursor = database.rawQuery(sql, new String[0]);
 
-        List<String> lsCategories = new ArrayList<String>();
+        List<String> listCat = new ArrayList<String>();
         if(cursor.moveToFirst()){
             do {
-                lsCategories.add(cursor.getString(0));
+                listCat.add(cursor.getString(0));
             } while (cursor.moveToNext());
         }
 
@@ -958,190 +954,52 @@ public class SchedulePopulator extends AbstractPopulator {
         cursor.close();
         //fix - android.database.CursorWindowAllocationException End
 
-        final Spinner spinCategory = ((Spinner)rootView.findViewById(R.id.player_category));
-        final Spinner spinSubCategory = ((Spinner)rootView.findViewById(R.id.player_subcategory));
-        final ListView listViewLibrary = ((ListView) rootView.findViewById(R.id.schedule_library_list));
-
-        ArrayAdapter<String> adapterCategory = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, lsCategories);
-        adapterCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinCategory.setAdapter(adapterCategory);
-
-        if (idxSelectedCategory > -1)
-            spinCategory.setSelection(idxSelectedCategory);
-
-            //m/ could remember the index
-            // or potentially the name of the category itself
-
-            /*
-        if(state.length() > 0) {
-            int iSpinnerPos = 0;
-
-            for(int i = 0; i<lsCategories.size(); i++) {
-                if(lsCategories.get(i).equalsIgnoreCase(state))
-                    iSpinnerPos = i;
-            }
-
-            spinCategory.setSelection(iSpinnerPos);
-        }
-        */
-
-        final View dialog = rootView;
-        final String sCat = category;
-        spinCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        ArrayAdapter<String> adapterCat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listCat);
+        listViewCategory.setAdapter(adapterCat);
+        listViewCategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String sCat = listViewCategory.getItemAtPosition(i).toString();
+                ((MainActivity)context).sSelectedCategory = sCat;
 
-                ((MainActivity)context).idxSelectedCategory = ((Spinner) dialog.findViewById(R.id.player_category)).getSelectedItemPosition();
-                String sCat2 = ((Spinner) dialog.findViewById(R.id.player_category)).getSelectedItem().toString();
-
-                /*
-                String sql2 = "SELECT DISTINCT subcategory FROM core_tbl_selftalk WHERE category='" + sCat2 + "' ORDER BY subcategory";
+                String sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCat + "' ORDER BY subcat";
 
                 SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
                 Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
 
-                List<String> lsSubCategories = new ArrayList<String>();
+                List<String> listSubcat = new ArrayList<String>();
                 if(cursor2.moveToFirst()){
                     do {
-                        lsSubCategories.add(cursor2.getString(0));
+                        listSubcat.add(cursor2.getString(0));
                     } while (cursor2.moveToNext());
                 }
 
-                ArrayAdapter<String> adapterSubCategory = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, lsSubCategories);
-                adapterSubCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spinSubCategory.setAdapter(adapterSubCategory);
-                */
+                //fix - android.database.CursorWindowAllocationException Start
+                cursor2.close();
+                //fix - android.database.CursorWindowAllocationException End
 
-                List<NonSched> nonSched = new List<NonSched>() {
-                    @Override
-                    public void add(int i, NonSched selfTalk) {
+                ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
+                listViewSubcategory.setAdapter(adapterSubcat);
 
-                    }
-
-                    @Override
-                    public boolean add(NonSched selfTalk) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean addAll(int i, Collection<? extends NonSched> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean addAll(Collection<? extends NonSched> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public void clear() {
-
-                    }
-
-                    @Override
-                    public boolean contains(Object o) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean containsAll(Collection<?> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public NonSched get(int i) {
-                        return null;
-                    }
-
-                    @Override
-                    public int indexOf(Object o) {
-                        return 0;
-                    }
-
-                    @Override
-                    public boolean isEmpty() {
-                        return false;
-                    }
-
-                    @NonNull
-                    @Override
-                    public Iterator<NonSched> iterator() {
-                        return null;
-                    }
-
-                    @Override
-                    public int lastIndexOf(Object o) {
-                        return 0;
-                    }
-
-                    @Override
-                    public ListIterator<NonSched> listIterator() {
-                        return null;
-                    }
-
-                    @NonNull
-                    @Override
-                    public ListIterator<NonSched> listIterator(int i) {
-                        return null;
-                    }
-
-                    @Override
-                    public NonSched remove(int i) {
-                        return null;
-                    }
-
-                    @Override
-                    public boolean remove(Object o) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean removeAll(Collection<?> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean retainAll(Collection<?> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public NonSched set(int i, NonSched selfTalk) {
-                        return null;
-                    }
-
-                    @Override
-                    public int size() {
-                        return 0;
-                    }
-
-                    @NonNull
-                    @Override
-                    public List<NonSched> subList(int i, int i1) {
-                        return null;
-                    }
-
-                    @NonNull
-                    @Override
-                    public Object[] toArray() {
-                        return new Object[0];
-                    }
-
-                    @NonNull
-                    @Override
-                    public <T> T[] toArray(T[] ts) {
-                        return null;
-                    }
-                };
-
-                nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat2);
+                List<NonSched> nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat);
                 listViewLibrary.setAdapter(new NonSchedListAdapter(context, nonSched));
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
             }
-       });
+        });
+
+        listViewSubcategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String sSubCat = listViewSubcategory.getItemAtPosition(i).toString();
+
+                List<SearchEntry> keys = new ArrayList<SearchEntry>();
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, ((MainActivity)context).sSelectedCategory));
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubCat));
+
+                List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
+                listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
+            }
+        });
 
         listViewLibrary.setOnItemClickListener(new AdapterView.OnItemClickListener() {
               @Override
@@ -1151,8 +1009,6 @@ public class SchedulePopulator extends AbstractPopulator {
               List<String> optsList = new ArrayList<String>();
 
               optsList.add("Edit");
-              optsList.add("Add To Sched");
-
               if (st.get_state().equalsIgnoreCase("active")) {
                   optsList.add("Deactivate");
               } else if (st.get_state().equalsIgnoreCase("inactive")) {
@@ -1193,6 +1049,68 @@ public class SchedulePopulator extends AbstractPopulator {
       });
     }
 
+    public void setup_new_player(final View rootView) {
+        super.setup(rootView, category);
+
+        final ListView listViewSubcategory = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
+        final ListView listViewItems = ((ListView) rootView.findViewById(R.id.schedule_item_list));
+        final ListView listViewStrings = ((ListView) rootView.findViewById(R.id.schedule_strings_list));
+
+        SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
+
+        String sql = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='player' ORDER BY subcat";
+        Cursor cursor = database.rawQuery(sql, new String[0]);
+
+        List<String> listSubcat = new ArrayList<String>();
+        if(cursor.moveToFirst()){
+            do {
+                listSubcat.add(cursor.getString(0));
+            } while (cursor.moveToNext());
+        }
+
+        //fix - android.database.CursorWindowAllocationException Start
+        cursor.close();
+        //fix - android.database.CursorWindowAllocationException End
+
+        ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
+        listViewSubcategory.setAdapter(adapterSubcat);
+        listViewSubcategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String sSubcat = listViewSubcategory.getItemAtPosition(i).toString();
+
+                List<SearchEntry> keys = new ArrayList<SearchEntry>();
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, "player"));
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubcat));
+
+                List<NonSched> listNsSubcat = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
+                listViewItems.setAdapter(new NonSchedListAdapter(context, listNsSubcat));
+            }
+        });
+
+        listViewItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                NonSched nsItem = (NonSched)listViewItems.getItemAtPosition(i);
+
+                String sContent = nsItem.getContent();
+                String[] sxStrings = sContent.split("\\n");
+
+                List<NonSched> listNsStrings = new ArrayList<NonSched>();
+
+                NonSched nsString;
+                for(int j=0; j<sxStrings.length; j++) {
+                    nsString = new NonSched();
+                    nsString.set_state("active");
+                    nsString.setCat("player");
+                    nsString.setName(sxStrings[j]);
+                    listNsStrings.add(nsString);
+                }
+                listViewStrings.setAdapter(new NonSchedListAdapter(context, listNsStrings));
+            }
+        });
+    }
+
     public void setup_player(final View rootView) {
         super.setup(rootView, "player");
         final List<NonSched> listSt = (List<NonSched>) (List<?>) nonSchedHelper.findBy("type","player");
@@ -1216,9 +1134,12 @@ public class SchedulePopulator extends AbstractPopulator {
             @Override
             public void onClick(View view) {
                 NonSched nsPlayer = new NonSched();
+                nsPlayer.setType("library");
+                nsPlayer.setCat("player");
+
+                //!!! need to eventually add a subcategory etc.
                 nsPlayer.setName(etAddName.getText().toString());
                 nsPlayer.setContent(etPlayerContent.getText().toString());
-                nsPlayer.setType("player");
 
                 if(DatabaseHelper.getInstance().getHelper(NonSchedHelper.class).createOrUpdate(nsPlayer)) {
                     Toast.makeText(context, "Saved.", Toast.LENGTH_SHORT).show();

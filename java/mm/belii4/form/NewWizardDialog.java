@@ -226,7 +226,7 @@ public class NewWizardDialog extends WizardDialog {
                         String[] sxItems = sBulkAdd.split("\\n");
                         boolean bSuccess = true;
 
-                        nonSched.setType("st");
+                        nonSched.setType("library");
                         nonSched.setCat(sCategory);
                         nonSched.setSubcat(sSubCategory);
                         nonSched.setAbbrev("");
@@ -252,7 +252,7 @@ public class NewWizardDialog extends WizardDialog {
                     }
 
                     else {
-                        nonSched.setType("st");
+                        nonSched.setType("library");
                         nonSched.setCat(sCategory);
                         nonSched.setSubcat(sSubCategory);
                         nonSched.setName(sName);
@@ -808,7 +808,8 @@ public class NewWizardDialog extends WizardDialog {
                         String sContent = sComTas.substring(iBuf + 2).trim();
 
                         NonSched  nsComTas = new NonSched();
-                        nsComTas.setType("comtas");
+                        nsComTas.setType("library");
+                        nsComTas.setCat("comtas");
                         nsComTas.setName(sName);
                         nsComTas.setContent(sContent);
 

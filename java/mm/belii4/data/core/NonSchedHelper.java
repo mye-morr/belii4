@@ -14,6 +14,7 @@ public class NonSchedHelper extends AbstractHelper{
         this.columns.add("cat TEXT");
         this.columns.add("subcat TEXT");
         this.columns.add("subsub TEXT");
+        this.columns.add("iprio TEXT");
         this.columns.add("name TEXT");
         this.columns.add("abbrev TEXT");
         this.columns.add("content TEXT");

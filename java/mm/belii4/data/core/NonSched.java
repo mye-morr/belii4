@@ -13,6 +13,7 @@ public class NonSched extends AbstractModel{
     private String cat = "";
     private String subcat = "";
     private String subsub = "";
+    private String iprio = "";
     private String name = "";
     private String abbrev = "";
     private String content = "";
@@ -30,6 +31,7 @@ public class NonSched extends AbstractModel{
         contentValues.put("cat", cat);
         contentValues.put("subcat", subcat);
         contentValues.put("subsub", subsub);
+        contentValues.put("iprio", iprio);
         contentValues.put("name", name);
         contentValues.put("abbrev", abbrev);
         contentValues.put("content", content);
@@ -50,6 +52,7 @@ public class NonSched extends AbstractModel{
         cat = fetchData(data, "cat");
         subcat = fetchData(data, "subcat");
         subsub = fetchData(data, "subsub");
+        iprio = fetchData(data, "iprio");
         name = fetchData(data, "name");
         abbrev = fetchData(data, "abbrev");
         content = fetchData(data, "content");
@@ -75,6 +78,10 @@ public class NonSched extends AbstractModel{
     public String getSubsub() { return subsub; }
 
     public void setSubsub(String subsub) { this.subsub = subsub; }
+
+    public String getIprio() { return iprio; }
+
+    public void setIprio(String iprio) { this.iprio = iprio; }
 
     public String getName() { return name; }
 

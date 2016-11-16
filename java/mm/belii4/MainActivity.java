@@ -32,10 +32,11 @@ public class MainActivity extends ActionBarActivity
     public static final int PAGE_HISTORY = 4;
     public static final int PAGE_GAMES = 5;
     public static final int PAGE_LIBRARY = 6;
-    public static final int PAGE_PLAYER = 7;
-    public static final int PAGE_TODAY = 8;
+    public static final int PAGE_NEW_PLAYER = 7;
+    public static final int PAGE_PLAYER = 8;
+    public static final int PAGE_TODAY = 9;
 
-    public static final int PAGE_SETTING = 9;
+    public static final int PAGE_SETTING = 10;
     public static final int SETTING_RESULT = 2;
 
     /**
@@ -54,7 +55,7 @@ public class MainActivity extends ActionBarActivity
     private HistoryPopulator historyPopulator;
     private SchedulePopulator schedulePopulator;
 
-    public int idxSelectedCategory;
+    public String sSelectedCategory = "";
 
     public HistoryPopulator getHistoryPopulator() {
         return historyPopulator;
@@ -72,8 +73,6 @@ public class MainActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        idxSelectedCategory = -1;
 
         //Initialize database helper
         DatabaseHelper.init(getApplicationContext());
@@ -176,6 +175,11 @@ public class MainActivity extends ActionBarActivity
             case PAGE_LIBRARY:
                 mTitle = getString(R.string.title_section_library);
                 menuResource = R.menu.menu_library;
+                break;
+
+            case PAGE_NEW_PLAYER:
+                mTitle = getString(R.string.title_section_new_player);
+                menuResource = R.menu.menu_blank;
                 break;
 
             case PAGE_PLAYER:
@@ -319,11 +323,11 @@ public class MainActivity extends ActionBarActivity
 
                 case PAGE_EVENTS:
                     rootView = inflater.inflate(R.layout.fragment_schedule_events, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_events(rootView, "events", -1);
+                    ((MainActivity) context).getSchedulePopulator().setup_events(rootView, "events");
                     break;
                 case PAGE_CONTACTS:
                     rootView = inflater.inflate(R.layout.fragment_schedule_contacts, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_contacts(rootView, "contacts", -1);
+                    ((MainActivity) context).getSchedulePopulator().setup_contacts(rootView, "contacts");
                     break;
                 case PAGE_MONITOR:
                     rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
@@ -339,7 +343,11 @@ public class MainActivity extends ActionBarActivity
                     break;
                 case PAGE_LIBRARY:
                     rootView = inflater.inflate(R.layout.fragment_schedule_library, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_library(rootView, "library", -1);
+                    ((MainActivity) context).getSchedulePopulator().setup_library(rootView, "library");
+                    break;
+                case PAGE_NEW_PLAYER:
+                    rootView = inflater.inflate(R.layout.fragment_schedule_new_player, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup_new_player(rootView);
                     break;
                 case PAGE_PLAYER:
                     rootView = inflater.inflate(R.layout.fragment_schedule_player, container, false);

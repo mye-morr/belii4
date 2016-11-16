@@ -15,7 +15,7 @@
         <ListView
             android:layout_width="125dp"
             android:layout_height="match_parent"
-            android:id="@+id/schedule_category_list"
+            android:id="@+id/schedule_subcategory_list"
             android:choiceMode="singleChoice"
             android:background="@color/app_background"
             android:scrollIndicators="right"
@@ -26,7 +26,7 @@
         <ListView
             android:layout_width="125dp"
             android:layout_height="match_parent"
-            android:id="@+id/schedule_subcategory_list"
+            android:id="@+id/schedule_item_list"
             android:choiceMode="singleChoice"
             android:background="@color/app_background"
             android:scrollIndicators="right"
@@ -38,7 +38,7 @@
     <ListView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/schedule_library_list"
+        android:id="@+id/schedule_strings_list"
         android:choiceMode="singleChoice"
         android:background="@color/app_background"
         android:scrollIndicators="right" />
