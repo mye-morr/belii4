@@ -33,14 +33,6 @@ public class MessageHelper extends AbstractHelper<Message>{
         return new Message();
     }
 
-    @Override
-    public AbstractModel populateRelations(AbstractModel abstractModel) {
-        Message message = (Message)super.populateRelations(abstractModel);
-        Schedule schedule = (Schedule)DatabaseHelper.getInstance().getHelper(ScheduleHelper.class).getBy("_id", message.getScheduleId());
-        message.setSchedule(schedule);
-        return message;
-    }
-
     public void initMessages(Calendar calendar){
         List<Schedule> schedules = (List<Schedule>)(List<?>)DatabaseHelper.getInstance().getHelper(ScheduleHelper.class).findBy("_state", "active");
         Calendar calWorking = Calendar.getInstance();

@@ -7,19 +7,13 @@ import java.util.Map;
 
 import mm.belii4.data.AbstractModel;
 
-/**
- * Created by farflk on 7/24/2014.
- */
 public class Message extends AbstractModel {
     private String scheduleId;
     private Calendar executed;
-    // private List<ContactItem> receivers = new ArrayList<ContactItem>();
     private String receiver;
     private String receiverName;
     private String message;
     private String error;
-
-    private Schedule schedule;
 
     public Message() { }
 
@@ -93,14 +87,6 @@ public class Message extends AbstractModel {
 
     public void setScheduleId(String scheduleId) {
         this.scheduleId = scheduleId;
-    }
-
-    public Schedule getSchedule() {
-        return schedule;
-    }
-
-    public void setSchedule(Schedule schedule) {
-        this.schedule = schedule;
     }
 
     public Calendar getExecuted() {
