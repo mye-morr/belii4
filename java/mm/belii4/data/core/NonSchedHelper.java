@@ -5,7 +5,7 @@ import android.content.Context;
 import mm.belii4.data.AbstractHelper;
 import mm.belii4.data.AbstractModel;
 
-public class NonSchedHelper extends AbstractHelper{
+public class NonSchedHelper extends AbstractHelper<NonSched>{
 
     public NonSchedHelper(Context context) {
         super(context);
@@ -26,7 +26,7 @@ public class NonSchedHelper extends AbstractHelper{
     }
 
     @Override
-    protected AbstractModel getModelInstance() {
+    protected NonSched getModelInstance() {
         return new NonSched();
     }
 }
