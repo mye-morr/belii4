@@ -23,6 +23,7 @@ public class NonSchedHelper extends AbstractHelper<NonSched>{
         this.columns.add("extThr TEXT");
         this.columns.add("pts TEXT");
         this.columns.add("notes TEXT");
+        this.columns.add("weight REAL");
     }
 
     @Override

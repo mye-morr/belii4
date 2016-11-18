@@ -22,6 +22,7 @@ public class NonSched extends AbstractModel{
     private String extthr = "";
     private String pts = "";
     private String notes = "";
+    private double weight = 0.0;
 
     public ContentValues getContentValues() {
 
@@ -40,6 +41,7 @@ public class NonSched extends AbstractModel{
         contentValues.put("extthr", extthr);
         contentValues.put("pts", pts);
         contentValues.put("notes", notes);
+        contentValues.put("weight", weight);
 
         return contentValues;
     }
@@ -61,6 +63,7 @@ public class NonSched extends AbstractModel{
         extthr = fetchData(data, "extthr");
         pts = fetchData(data, "pts");
         notes = fetchData(data, "notes");
+        weight = fetchDataDouble(data, "weight");
     }
 
     public String getType() { return type; }
@@ -115,4 +118,7 @@ public class NonSched extends AbstractModel{
 
     public void setNotes(String notes) { this.notes = notes; }
 
+    public double getWeight() { return weight; }
+
+    public void setWeight(double weight) { this.weight = weight; }
 }
