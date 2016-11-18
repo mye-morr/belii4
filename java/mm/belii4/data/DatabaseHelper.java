@@ -10,6 +10,7 @@ import java.util.List;
 import mm.belii4.data.core.ContactItemHelper;
 import mm.belii4.data.core.GamesHelper;
 import mm.belii4.data.core.MessageHelper;
+import mm.belii4.data.core.NonSchedContentHelper;
 import mm.belii4.data.core.NonSchedHelper;
 import mm.belii4.data.core.ScheduleHelper;
 
@@ -32,6 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             databaseHelper.modelHelpers.add(new NonSchedHelper(context));
             databaseHelper.modelHelpers.add(new ContactItemHelper(context));
             databaseHelper.modelHelpers.add(new GamesHelper(context));
+            databaseHelper.modelHelpers.add(new NonSchedContentHelper(context));
         }
     }
 
