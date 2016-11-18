@@ -2,6 +2,8 @@ package mm.belii4.data.core;
 
 import android.content.ContentValues;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import mm.belii4.data.AbstractModel;
@@ -16,12 +18,13 @@ public class NonSched extends AbstractModel{
     private String iprio = "";
     private String name = "";
     private String abbrev = "";
-    private String content = "";
     private String wt = "";
     private String extpct = "";
     private String extthr = "";
     private String pts = "";
     private String notes = "";
+
+    private List<NonSchedContent> contents  = new ArrayList<>();
 
     public ContentValues getContentValues() {
 
@@ -34,7 +37,6 @@ public class NonSched extends AbstractModel{
         contentValues.put("iprio", iprio);
         contentValues.put("name", name);
         contentValues.put("abbrev", abbrev);
-        contentValues.put("content", content);
         contentValues.put("wt", wt);
         contentValues.put("extpct", extpct);
         contentValues.put("extthr", extthr);
@@ -55,7 +57,6 @@ public class NonSched extends AbstractModel{
         iprio = fetchData(data, "iprio");
         name = fetchData(data, "name");
         abbrev = fetchData(data, "abbrev");
-        content = fetchData(data, "content");
         wt = fetchData(data, "wt");
         extpct = fetchData(data, "extpct");
         extthr = fetchData(data, "extthr");
@@ -91,9 +92,27 @@ public class NonSched extends AbstractModel{
 
     public void setAbbrev(String abbrev) { this.abbrev = abbrev; }
 
-    public String getContent() { return content; }
+    public String getContent() {
+        StringBuffer buffer = new StringBuffer();
+        for (NonSchedContent content : contents) {
+            buffer.append(content + "\n");
+        }
+        return buffer.toString();
+    }
 
-    public void setContent(String content) { this.content = content; }
+    public void setContent(String content) {
+        contents.clear();
+        String[] items = content.split("\\n");
+        for (String item : items) {
+            NonSchedContent nonSchedContent = new NonSchedContent();
+            nonSchedContent.setContent(item);
+            contents.add(nonSchedContent);
+        }
+    }
+
+    public List<NonSchedContent> getContents() { return this.contents; }
+
+    public void setContents(List<NonSchedContent> contents) { this.contents = contents; }
 
     public String getWt() { return wt; }
 
