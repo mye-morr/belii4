@@ -67,6 +67,10 @@ public abstract class AbstractHelper <T extends AbstractModel> {
 
         Log.i("DB", "Insert into " + tableName + ":" + contentValues.getAsString("_id"));
         Boolean output = database.insert(this.tableName, null, contentValues) > 0;
+        if (output) {
+            model._id = contentValues.getAsString("_id");
+            model._state = contentValues.getAsString("_state");
+        }
         return output;
     }
 
