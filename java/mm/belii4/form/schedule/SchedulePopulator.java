@@ -36,6 +36,7 @@ import mm.belii4.data.SearchEntry;
 import mm.belii4.data.core.Games;
 import mm.belii4.data.core.GamesHelper;
 import mm.belii4.data.core.NonSched;
+import mm.belii4.data.core.NonSchedContentHelper;
 import mm.belii4.data.core.NonSchedHelper;
 import mm.belii4.data.core.Schedule;
 import mm.belii4.data.core.ScheduleHelper;
@@ -46,6 +47,7 @@ public class SchedulePopulator extends AbstractPopulator {
     protected ScheduleHelper scheduleHelper;
     protected NonSchedHelper nonSchedHelper;
     protected GamesHelper gamesHelper;
+    protected NonSchedContentHelper nonSchedContentHelper;
     protected DatabaseHelper databaseHelper;
     protected Calendar calSimulate;
 
@@ -59,6 +61,7 @@ public class SchedulePopulator extends AbstractPopulator {
         this.scheduleHelper = DatabaseHelper.getInstance().getHelper(ScheduleHelper.class);
         this.nonSchedHelper = DatabaseHelper.getInstance().getHelper(NonSchedHelper.class);
         this.gamesHelper = DatabaseHelper.getInstance().getHelper(GamesHelper.class);
+        this.nonSchedContentHelper = DatabaseHelper.getInstance().getHelper(NonSchedContentHelper.class);
         this.databaseHelper = DatabaseHelper.getInstance();
         this.calSimulate = Calendar.getInstance();
     }
