@@ -55,7 +55,8 @@ public class MainActivity extends ActionBarActivity
     private HistoryPopulator historyPopulator;
     private SchedulePopulator schedulePopulator;
 
-    public String sSelectedCategory = "";
+    public String sSelectedCat = "";
+    public String sSelectedSubcat = "";
 
     public HistoryPopulator getHistoryPopulator() {
         return historyPopulator;

@@ -279,7 +279,7 @@ public class SchedulePopulator extends AbstractPopulator {
         //fix - android.database.CursorWindowAllocationException End
 
         final Spinner spinCategory = ((Spinner)rootView.findViewById(R.id.events_category));
-        final ListView listViewSt = ((ListView) rootView.findViewById(R.id.schedule_list));
+        final ListView listView = ((ListView) rootView.findViewById(R.id.schedule_list));
 
         ArrayAdapter<String> adapterCategory = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, lsCategories);
         adapterCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -416,7 +416,7 @@ public class SchedulePopulator extends AbstractPopulator {
                 };
 
                 schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", sCat2);
-                listViewSt.setAdapter(new ScheduleListAdapter(context, schedules));
+                listView.setAdapter(new ScheduleListAdapter(context, schedules));
             }
 
             @Override
@@ -425,57 +425,8 @@ public class SchedulePopulator extends AbstractPopulator {
             }
         });
 
-        listViewSt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final Schedule sched = (Schedule) listViewSt.getItemAtPosition(i);
-                AlertDialog.Builder alertOptions = new AlertDialog.Builder(context);
-                List<String> optsList = new ArrayList<String>();
-
-                optsList.add("Edit");
-
-                if (sched.get_state().equalsIgnoreCase("active")) {
-                    optsList.add("Deactivate");
-                } else if (sched.get_state().equalsIgnoreCase("inactive")) {
-                    optsList.add("Activate");
-                }
-
-                optsList.add("Delete");
-
-                final String[] options = optsList.toArray(new String[]{});
-                alertOptions.setAdapter(new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, android.R.id.text1, options), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                        if (options[i].equalsIgnoreCase("EDIT")) {
-
-                            new NewWizardDialog(context, sched).show();
-
-                        } else if (options[i].equalsIgnoreCase("DELETE")) {
-                            Toast.makeText(context, "Schedule deleted.", Toast.LENGTH_SHORT).show();
-                            scheduleHelper.delete(sched.get_id());
-                            ((MainActivity) context).getSchedulePopulator().resetup();
-                            dialogInterface.dismiss();
-
-                        }
-                    }
-                });
-
-                alertOptions.setCancelable(true);
-                alertOptions.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-                alertOptions.show();
-
-            }
-        });
-
         List<Schedule> schedules;
         schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", sCat);
-        final ListView listView = ((ListView) rootView.findViewById(R.id.schedule_list));
         listView.setAdapter(new ScheduleListAdapter(context, schedules));
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -941,9 +892,46 @@ public class SchedulePopulator extends AbstractPopulator {
         final ListView listViewSubcategory = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
         final ListView listViewLibrary = ((ListView) rootView.findViewById(R.id.schedule_library_list));
 
+        String sCategory = ((MainActivity) (context)).sSelectedCat;
+        String sSubCategory = ((MainActivity) (context)).sSelectedSubcat;
+
+        if (sCategory.length() > 0) {
+
+            String sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCategory + "' ORDER BY subcat";
+
+            SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
+            Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
+
+            List<String> listSubcat = new ArrayList<String>();
+            if(cursor2.moveToFirst()){
+                do {
+                    listSubcat.add(cursor2.getString(0));
+                } while (cursor2.moveToNext());
+            }
+
+            //fix - android.database.CursorWindowAllocationException Start
+            cursor2.close();
+            //fix - android.database.CursorWindowAllocationException End
+
+            ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
+            listViewSubcategory.setAdapter(adapterSubcat);
+
+            ///////////////////////////////////////////
+
+            List<SearchEntry> keys = new ArrayList<SearchEntry>();
+            keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, sCategory));
+
+            if(sSubCategory.length() > 0) {
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubCategory));
+            }
+
+            List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
+            listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
+        }
+
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
 
-        String sql = "SELECT DISTINCT cat FROM core_tbl_nonsched WHERE type='library' ORDER BY cat";
+        String sql = "SELECT DISTINCT cat FROM core_tbl_nonsched ORDER BY cat";
         Cursor cursor = database.rawQuery(sql, new String[0]);
 
         List<String> listCat = new ArrayList<String>();
@@ -963,7 +951,8 @@ public class SchedulePopulator extends AbstractPopulator {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String sCat = listViewCategory.getItemAtPosition(i).toString();
-                ((MainActivity)context).sSelectedCategory = sCat;
+                ((MainActivity)context).sSelectedCat = sCat;
+                ((MainActivity)context).sSelectedSubcat = "";
 
                 String sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCat + "' ORDER BY subcat";
 
@@ -993,11 +982,12 @@ public class SchedulePopulator extends AbstractPopulator {
         listViewSubcategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String sSubCat = listViewSubcategory.getItemAtPosition(i).toString();
+                String sSubcat = listViewSubcategory.getItemAtPosition(i).toString();
+                ((MainActivity)context).sSelectedSubcat = sSubcat;
 
                 List<SearchEntry> keys = new ArrayList<SearchEntry>();
-                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, ((MainActivity)context).sSelectedCategory));
-                keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubCat));
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, ((MainActivity)context).sSelectedCat));
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubcat));
 
                 List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
                 listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
@@ -1116,13 +1106,13 @@ public class SchedulePopulator extends AbstractPopulator {
 
     public void setup_player(final View rootView) {
         super.setup(rootView, "player");
-        final List<NonSched> listSt = (List<NonSched>) (List<?>) nonSchedHelper.findBy("type","player");
+        final List<NonSched> listPlayer = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat","player");
 
         final EditText etPlayerContent = ((EditText) rootView.findViewById(R.id.etPlayerContent));
         final EditText etAddName = ((EditText) rootView.findViewById(R.id.player_add_name));
 
         final ListView listView = ((ListView) rootView.findViewById(R.id.player_list));
-        listView.setAdapter(new NonSchedListAdapter(context, listSt));
+        listView.setAdapter(new NonSchedListAdapter(context, listPlayer));
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -1137,7 +1127,6 @@ public class SchedulePopulator extends AbstractPopulator {
             @Override
             public void onClick(View view) {
                 NonSched nsPlayer = new NonSched();
-                nsPlayer.setType("library");
                 nsPlayer.setCat("player");
 
                 //!!! need to eventually add a subcategory etc.

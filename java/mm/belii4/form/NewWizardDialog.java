@@ -149,7 +149,7 @@ public class NewWizardDialog extends WizardDialog {
 
         for (int i = 0; i < listComTas.size(); i++) {
             List<SearchEntry> keys = new ArrayList<SearchEntry>();
-            keys.add(new SearchEntry(SearchEntry.Type.STRING, "type", SearchEntry.Search.EQUAL, "comtas"));
+            keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, "comtas"));
             keys.add(new SearchEntry(SearchEntry.Type.STRING, "name", SearchEntry.Search.EQUAL, listComTas.get(i)));
 
             final NonSched nsComTas = (NonSched) DatabaseHelper.getInstance().getHelper(NonSchedHelper.class).get(keys);
@@ -182,8 +182,7 @@ public class NewWizardDialog extends WizardDialog {
             name = "%";
         }
 
-        keys.add(new SearchEntry(SearchEntry.Type.STRING, "type", SearchEntry.Search.EQUAL, "comtas"));
-        keys.add(new SearchEntry(SearchEntry.Type.STRING, "name", SearchEntry.Search.LIKE, name));
+        keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, "comtas"));
 
         // helper is to search the database
         List<NonSched> listNsComTas = (List<NonSched>)(List<?>)nonSchedHelper.find(keys);
@@ -226,7 +225,6 @@ public class NewWizardDialog extends WizardDialog {
                         String[] sxItems = sBulkAdd.split("\\n");
                         boolean bSuccess = true;
 
-                        nonSched.setType("library");
                         nonSched.setCat(sCategory);
                         nonSched.setSubcat(sSubCategory);
                         nonSched.setAbbrev("");
@@ -252,12 +250,13 @@ public class NewWizardDialog extends WizardDialog {
                     }
 
                     else {
-                        nonSched.setType("library");
                         nonSched.setCat(sCategory);
                         nonSched.setSubcat(sSubCategory);
                         nonSched.setName(sName);
                         nonSched.setContent(sContent);
                         nonSched.setPts("0");
+
+                        ((MainActivity) (context)).sSelectedCat = sCategory;
 
                         if (DatabaseHelper.getInstance().getHelper(NonSchedHelper.class).createOrUpdate(nonSched)) {
                             Toast.makeText(context, "Self-talk saved.", Toast.LENGTH_SHORT).show();
@@ -808,7 +807,6 @@ public class NewWizardDialog extends WizardDialog {
                         String sContent = sComTas.substring(iBuf + 2).trim();
 
                         NonSched  nsComTas = new NonSched();
-                        nsComTas.setType("library");
                         nsComTas.setCat("comtas");
                         nsComTas.setName(sName);
                         nsComTas.setContent(sContent);

@@ -3,14 +3,12 @@ package mm.belii4.data.core;
 import android.content.Context;
 
 import mm.belii4.data.AbstractHelper;
-import mm.belii4.data.AbstractModel;
 
 public class NonSchedHelper extends AbstractHelper<NonSched>{
 
     public NonSchedHelper(Context context) {
         super(context);
         this.tableName = "core_tbl_nonsched";
-        this.columns.add("type TEXT");
         this.columns.add("cat TEXT");
         this.columns.add("subcat TEXT");
         this.columns.add("subsub TEXT");

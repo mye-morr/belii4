@@ -9,7 +9,6 @@ import mm.belii4.data.AbstractModel;
 // to store flashcards, games, comTas
 
 public class NonSched extends AbstractModel{
-    private String type = "";
     private String cat = "";
     private String subcat = "";
     private String subsub = "";
@@ -28,7 +27,6 @@ public class NonSched extends AbstractModel{
 
         ContentValues contentValues = super.getContentValues();
 
-        contentValues.put("type", type);
         contentValues.put("cat", cat);
         contentValues.put("subcat", subcat);
         contentValues.put("subsub", subsub);
@@ -50,7 +48,6 @@ public class NonSched extends AbstractModel{
     public void populateWith(Map<String, Object> data) {
         super.populateWith(data);
 
-        type = fetchData(data, "type");
         cat = fetchData(data, "cat");
         subcat = fetchData(data, "subcat");
         subsub = fetchData(data, "subsub");
@@ -65,10 +62,6 @@ public class NonSched extends AbstractModel{
         notes = fetchData(data, "notes");
         weight = fetchDataDouble(data, "weight");
     }
-
-    public String getType() { return type; }
-
-    public void setType(String type) { this.type = type; }
 
     public String getCat() { return cat; }
 
