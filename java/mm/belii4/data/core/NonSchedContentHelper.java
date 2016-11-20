@@ -15,6 +15,7 @@ public class NonSchedContentHelper extends AbstractHelper<NonSchedContent> {
         this.tableName = "core_tbl_nonsched_content";
         this.columns.add("nonschedid TEXT");
         this.columns.add("content TEXT");
+        this.columns.add("weight REAL");
     }
 
     @Override

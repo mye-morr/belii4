@@ -14,12 +14,14 @@ public class NonSchedContent extends AbstractModel {
 
     private String nonschedid = "";
     private String content = "";
+    private double weight = 0.0;
 
     public ContentValues getContentValues() {
         ContentValues contentValues = super.getContentValues();
 
         contentValues.put("nonschedid", nonschedid);
         contentValues.put("content", content);
+        contentValues.put("weight", weight);
 
         return contentValues;
     }
@@ -30,6 +32,7 @@ public class NonSchedContent extends AbstractModel {
 
         nonschedid = fetchData(data, "nonschedid");
         content = fetchData(data, "content");
+        weight = fetchDataDouble(data, "weight");
     }
 
     public String getNonschedid() {
@@ -47,4 +50,8 @@ public class NonSchedContent extends AbstractModel {
     public void setContent(String content) {
         this.content = content;
     }
+
+    public double getWeight() { return weight; }
+
+    public void setWeight(double weight) { this.weight = weight; }
 }
