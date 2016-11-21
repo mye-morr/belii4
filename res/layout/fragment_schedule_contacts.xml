@@ -5,12 +5,39 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Spinner
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/contacts_category"
-        android:spinnerMode="dialog"
-        android:layout_marginLeft="5dp"/>
+        android:weightSum="1" >
+
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_weight="0.33"
+            android:layout_height="match_parent"
+            android:id="@+id/btnContacts1"
+            android:textAllCaps="false"
+            android:textOff="Gfs"
+            android:textOn="Gfs"
+            android:checked="false" />
+
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_weight="0.33"
+            android:layout_height="match_parent"
+            android:id="@+id/btnContacts2"
+            android:textAllCaps="false"
+            android:textOff="Netw"
+            android:textOn="Netw" />
+
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_weight="0.33"
+            android:layout_height="match_parent"
+            android:id="@+id/btnContacts3"
+            android:textAllCaps="false"
+            android:textOff="Fam"
+            android:textOn="Fam" />
+    </LinearLayout>
 
     <ListView
         android:layout_width="fill_parent"

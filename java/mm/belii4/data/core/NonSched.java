@@ -16,12 +16,7 @@ public class NonSched extends AbstractModel{
     private String name = "";
     private String abbrev = "";
     private String content = "";
-    private String wt = "";
-    private String extpct = "";
-    private String extthr = "";
-    private String pts = "";
     private String notes = "";
-    private double weight = 0.0;
 
     public ContentValues getContentValues() {
 
@@ -34,12 +29,7 @@ public class NonSched extends AbstractModel{
         contentValues.put("name", name);
         contentValues.put("abbrev", abbrev);
         contentValues.put("content", content);
-        contentValues.put("wt", wt);
-        contentValues.put("extpct", extpct);
-        contentValues.put("extthr", extthr);
-        contentValues.put("pts", pts);
         contentValues.put("notes", notes);
-        contentValues.put("weight", weight);
 
         return contentValues;
     }
@@ -55,12 +45,7 @@ public class NonSched extends AbstractModel{
         name = fetchData(data, "name");
         abbrev = fetchData(data, "abbrev");
         content = fetchData(data, "content");
-        wt = fetchData(data, "wt");
-        extpct = fetchData(data, "extpct");
-        extthr = fetchData(data, "extthr");
-        pts = fetchData(data, "pts");
         notes = fetchData(data, "notes");
-        weight = fetchDataDouble(data, "weight");
     }
 
     public String getCat() { return cat; }
@@ -91,27 +76,7 @@ public class NonSched extends AbstractModel{
 
     public void setContent(String content) { this.content = content; }
 
-    public String getWt() { return wt; }
-
-    public void setWt(String wt) { this.wt = wt; }
-
-    public String getExtpct() { return extpct; }
-
-    public void setExtpct(String extpct) { this.extpct = extpct; }
-
-    public String getExtthr() { return extthr; }
-
-    public void setExtthr(String extthr) { this.extthr = extthr; }
-
-    public String getPts() { return pts; }
-
-    public void setPts(String pts) { this.pts = pts; }
-
     public String getNotes() { return notes; }
 
     public void setNotes(String notes) { this.notes = notes; }
-
-    public double getWeight() { return weight; }
-
-    public void setWeight(double weight) { this.weight = weight; }
 }

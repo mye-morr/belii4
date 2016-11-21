@@ -6,11 +6,7 @@ import java.util.Map;
 
 import mm.belii4.data.AbstractModel;
 
-/**
- * Created by tedwei on 11/18/16.
- */
-
-public class NonSchedContent extends AbstractModel {
+public class Content extends AbstractModel {
 
     private String nonschedid = "";
     private String content = "";
@@ -33,6 +29,7 @@ public class NonSchedContent extends AbstractModel {
         nonschedid = fetchData(data, "nonschedid");
         content = fetchData(data, "content");
         weight = fetchDataDouble(data, "weight");
+
     }
 
     public String getNonschedid() {
@@ -54,4 +51,5 @@ public class NonSchedContent extends AbstractModel {
     public double getWeight() { return weight; }
 
     public void setWeight(double weight) { this.weight = weight; }
+
 }

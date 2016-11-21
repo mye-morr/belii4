@@ -105,13 +105,12 @@ public class DrawerFragment extends Fragment {
 
         drawerItems.add(new DrawerItem(R.string.title_section_events, R.drawable.drawer_schedule));
         drawerItems.add(new DrawerItem(R.string.title_section_contacts, R.drawable.drawer_schedule));
-        drawerItems.add(new DrawerItem(R.string.title_section_monitor, R.drawable.drawer_schedule));
         drawerItems.add(new DrawerItem(R.string.title_section_history, R.drawable.drawer_history));
         drawerItems.add(new DrawerItem(R.string.title_section_game, R.drawable.drawer_setting));
         drawerItems.add(new DrawerItem(R.string.title_section_library, R.drawable.drawer_setting));
         drawerItems.add(new DrawerItem(R.string.title_section_new_player, R.drawable.drawer_setting));
         drawerItems.add(new DrawerItem(R.string.title_section_player, R.drawable.drawer_setting));
-        drawerItems.add(new DrawerItem(R.string.title_section_today, R.drawable.drawer_schedule));
+        drawerItems.add(new DrawerItem(R.string.title_section_ontrack, R.drawable.drawer_schedule));
 
         mDrawerListView.setAdapter(new DrawerAdapter(getActionBar().getThemedContext(), drawerItems));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);

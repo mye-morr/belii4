@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ToggleButton;
 
 import mm.belii4.data.DatabaseHelper;
 import mm.belii4.data.core.ContactItemHelper;
@@ -28,15 +29,14 @@ public class MainActivity extends ActionBarActivity
 
     public static final int PAGE_EVENTS = 1;
     public static final int PAGE_CONTACTS = 2;
-    public static final int PAGE_MONITOR = 3;
-    public static final int PAGE_HISTORY = 4;
-    public static final int PAGE_GAMES = 5;
-    public static final int PAGE_LIBRARY = 6;
-    public static final int PAGE_NEW_PLAYER = 7;
-    public static final int PAGE_PLAYER = 8;
-    public static final int PAGE_TODAY = 9;
+    public static final int PAGE_HISTORY = 3;
+    public static final int PAGE_GAMES = 4;
+    public static final int PAGE_LIBRARY = 5;
+    public static final int PAGE_NEW_PLAYER = 6;
+    public static final int PAGE_PLAYER = 7;
+    public static final int PAGE_ONTRACK = 8;
 
-    public static final int PAGE_SETTING = 10;
+    public static final int PAGE_SETTING = 9;
     public static final int SETTING_RESULT = 2;
 
     /**
@@ -57,6 +57,9 @@ public class MainActivity extends ActionBarActivity
 
     public String sSelectedCat = "";
     public String sSelectedSubcat = "";
+
+    private ToggleButton mBtnCurrentToggleEvents;
+
 
     public HistoryPopulator getHistoryPopulator() {
         return historyPopulator;
@@ -158,11 +161,6 @@ public class MainActivity extends ActionBarActivity
                 menuResource = R.menu.menu_contacts;
                 break;
 
-            case PAGE_MONITOR:
-                mTitle = getString(R.string.title_section_monitor);
-                menuResource = R.menu.menu_monitor;
-                break;
-
             case PAGE_HISTORY:
                 mTitle = getString(R.string.title_section_history);
                 menuResource = R.menu.menu_history;
@@ -188,9 +186,9 @@ public class MainActivity extends ActionBarActivity
                 menuResource = R.menu.menu_blank;
                 break;
 
-            case PAGE_TODAY:
-                mTitle = getString(R.string.title_section_today);
-                menuResource = R.menu.menu_today;
+            case PAGE_ONTRACK:
+                mTitle = getString(R.string.title_section_ontrack);
+                menuResource = R.menu.menu_ontrack;
                 break;
         }
     }
@@ -259,9 +257,6 @@ public class MainActivity extends ActionBarActivity
             case R.id.action_schedule_new_contacts:
                 schedulePopulator.setupNew("contacts");
                 break;
-            case R.id.action_schedule_new_monitor:
-                schedulePopulator.setupNew("monitor");
-                break;
             case R.id.action_clear_history:
                 historyPopulator.setupClearHistory();
                 break;
@@ -271,8 +266,8 @@ public class MainActivity extends ActionBarActivity
             case R.id.action_schedule_new_library:
                 schedulePopulator.setupNew("library");
                 break;
-            case R.id.action_schedule_new_today:
-                schedulePopulator.setupNew("today");
+            case R.id.action_schedule_new_ontrack:
+                schedulePopulator.setupNew("ontrack");
                 break;
             case R.id.action_settings:
                 startSettingsActivity();
@@ -324,15 +319,11 @@ public class MainActivity extends ActionBarActivity
 
                 case PAGE_EVENTS:
                     rootView = inflater.inflate(R.layout.fragment_schedule_events, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_events(rootView, "events");
+                    ((MainActivity) context).getSchedulePopulator().setup_events(rootView);
                     break;
                 case PAGE_CONTACTS:
                     rootView = inflater.inflate(R.layout.fragment_schedule_contacts, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_contacts(rootView, "contacts");
-                    break;
-                case PAGE_MONITOR:
-                    rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "monitor");
+                    ((MainActivity) context).getSchedulePopulator().setup_contacts(rootView);
                     break;
                 case PAGE_HISTORY:
                     rootView = inflater.inflate(R.layout.fragment_overview, container, false);
@@ -340,7 +331,7 @@ public class MainActivity extends ActionBarActivity
                     break;
                 case PAGE_GAMES:
                     rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_games(rootView, "games");
+                    ((MainActivity) context).getSchedulePopulator().setup_games(rootView);
                     break;
                 case PAGE_LIBRARY:
                     rootView = inflater.inflate(R.layout.fragment_schedule_library, container, false);
@@ -354,9 +345,9 @@ public class MainActivity extends ActionBarActivity
                     rootView = inflater.inflate(R.layout.fragment_schedule_player, container, false);
                     ((MainActivity) context).getSchedulePopulator().setup_player(rootView);
                     break;
-                case PAGE_TODAY:
-                    rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "today");
+                case PAGE_ONTRACK:
+                    rootView = inflater.inflate(R.layout.fragment_schedule_ontrack, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup_ontrack(rootView);
                     break;
                 case PAGE_SETTING:
                     ((MainActivity)context).startSettingsActivity();

@@ -228,7 +228,6 @@ public class NewWizardDialog extends WizardDialog {
                         nonSched.setCat(sCategory);
                         nonSched.setSubcat(sSubCategory);
                         nonSched.setAbbrev("");
-                        nonSched.setPts("0");
 
                         //!!! will add abbreviations later
                         for(int i=0; i<sxItems.length; i++) {
@@ -254,7 +253,6 @@ public class NewWizardDialog extends WizardDialog {
                         nonSched.setSubcat(sSubCategory);
                         nonSched.setName(sName);
                         nonSched.setContent(sContent);
-                        nonSched.setPts("0");
 
                         ((MainActivity) (context)).sSelectedCat = sCategory;
 
@@ -522,7 +520,9 @@ public class NewWizardDialog extends WizardDialog {
                 }
             });
 
+
             final Spinner spinCat = ((Spinner)dialog.findViewById(R.id.events_category));
+
             spinCat.setSelection(schedule.getSubCatSelected(eventCategories));
             spinCat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override

@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.PowerManager;
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,18 +15,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 import mm.belii4.MainActivity;
 import mm.belii4.R;
@@ -36,8 +32,8 @@ import mm.belii4.data.SearchEntry;
 import mm.belii4.data.core.Games;
 import mm.belii4.data.core.GamesHelper;
 import mm.belii4.data.core.NonSched;
-import mm.belii4.data.core.NonSchedContentHelper;
 import mm.belii4.data.core.NonSchedHelper;
+import mm.belii4.data.core.PlayerHelper;
 import mm.belii4.data.core.Schedule;
 import mm.belii4.data.core.ScheduleHelper;
 import mm.belii4.form.AbstractPopulator;
@@ -47,7 +43,7 @@ public class SchedulePopulator extends AbstractPopulator {
     protected ScheduleHelper scheduleHelper;
     protected NonSchedHelper nonSchedHelper;
     protected GamesHelper gamesHelper;
-    protected NonSchedContentHelper nonSchedContentHelper;
+    protected PlayerHelper playerHelper;
     protected DatabaseHelper databaseHelper;
     protected Calendar calSimulate;
 
@@ -56,12 +52,14 @@ public class SchedulePopulator extends AbstractPopulator {
     private static DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
+    protected String sCategory;
+
     public SchedulePopulator(Context context) {
         super(context);
         this.scheduleHelper = DatabaseHelper.getInstance().getHelper(ScheduleHelper.class);
         this.nonSchedHelper = DatabaseHelper.getInstance().getHelper(NonSchedHelper.class);
         this.gamesHelper = DatabaseHelper.getInstance().getHelper(GamesHelper.class);
-        this.nonSchedContentHelper = DatabaseHelper.getInstance().getHelper(NonSchedContentHelper.class);
+        this.playerHelper = DatabaseHelper.getInstance().getHelper(PlayerHelper.class);
         this.databaseHelper = DatabaseHelper.getInstance();
         this.calSimulate = Calendar.getInstance();
     }
@@ -70,14 +68,17 @@ public class SchedulePopulator extends AbstractPopulator {
     public void setup(View rootView, String category) {
         super.setup(rootView, category);
 
-        if(category.equals("events")) {
-            setup_events(rootView, category);
+        if(category.equals("ontask")) {
+            setup_ontrack(rootView);
+        }
+        else if(category.equals("events")) {
+            setup_events(rootView);
         }
         else if(category.equals("contacts")) {
-            setup_contacts(rootView, category);
+            setup_contacts(rootView);
         }
         else if(category.equals("games")) {
-            setup_games(rootView, category);
+            setup_games(rootView);
         }
         else if(category.equals("library")) {
             setup_library(rootView, category);
@@ -85,136 +86,9 @@ public class SchedulePopulator extends AbstractPopulator {
         else if(category.equals("player")) {
             setup_player(rootView);
         }
-        else {
-            List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", category);
-
-            //Collections.reverse(schedules); // the idea here was most recent entries go on top, but not necessary
-            final ListView listView = ((ListView) rootView.findViewById(R.id.schedule_list));
-            listView.setAdapter(new ScheduleListAdapter(context, schedules));
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    final Schedule schedule = (Schedule) listView.getItemAtPosition(i);
-                    AlertDialog.Builder alertOptions = new AlertDialog.Builder(context);
-                    List<String> optsList = new ArrayList<String>();
-
-                    optsList.add("Edit");
-
-                    // can't reactivate if completed?!!
-                    if (!schedule.get_state().equalsIgnoreCase("completed")) {
-                        optsList.add("Postpone");
-
-                        if (schedule.get_state().equalsIgnoreCase("active")) {
-                            optsList.add("Deactivate");
-                        } else if (schedule.get_state().equalsIgnoreCase("inactive")) {
-                            optsList.add("Activate");
-                        }
-                    }
-
-                    optsList.add("Delete");
-                    optsList.add("Show Details");
-
-                    final String[] options = optsList.toArray(new String[]{});
-                    alertOptions.setAdapter(new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, android.R.id.text1, options), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                            if (options[i].equalsIgnoreCase("POSTPONE")) {
-                                AlertDialog.Builder postponeMinutes = new AlertDialog.Builder(context);
-                                postponeMinutes.setTitle("Postpone");
-                                postponeMinutes.setMessage("Minutes; varia");
-                                final EditText input = new EditText(context);
-                                postponeMinutes.setView(input);
-
-                                postponeMinutes.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        Calendar nextExecute = schedule.getNextExecute();
-                                        nextExecute.add(Calendar.MINUTE, Integer.parseInt(input.getText().toString()));
-                                        schedule.setNextExecute(nextExecute);
-                                        scheduleHelper.update(schedule);
-                                    }
-                                });
-                                postponeMinutes.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.cancel();
-                                    }
-                                });
-
-                                postponeMinutes.show();
-
-                            } else if (options[i].equalsIgnoreCase("EDIT")) {
-                                new NewWizardDialog(context, schedule).show();
-                            } else if (options[i].equalsIgnoreCase("DELETE")) {
-                                Toast.makeText(context, "Schedule deleted.", Toast.LENGTH_SHORT).show();
-                                scheduleHelper.delete(schedule.get_id());
-                                ((MainActivity) context).getSchedulePopulator().resetup();
-                                dialogInterface.dismiss();
-                            } else if (options[i].equalsIgnoreCase("ACTIVATE")) {
-                                schedule.set_state("active");
-                                //fix - Multiple duplication of schedules Start
-                                scheduleHelper.update(schedule);
-                                //fix - Multiple duplication of schedules End
-                                ((MainActivity) context).getSchedulePopulator().resetup();
-                            } else if (options[i].equalsIgnoreCase("DEACTIVATE")) {
-                                schedule.set_state("inactive");
-                                //fix - Multiple duplication of schedules Start
-                                scheduleHelper.update(schedule);
-                                //fix - Multiple duplication of schedules End
-                                ((MainActivity) context).getSchedulePopulator().resetup();
-                            } else if (options[i].equalsIgnoreCase("SHOW DETAILS")) {
-                                AlertDialog.Builder showDetails = new AlertDialog.Builder(context);
-                                showDetails.setTitle("Show Details");
-
-                                int iMinutesNextDue = schedule.getNextDue().get(Calendar.MINUTE);
-                                String sMinutesNextDue = iMinutesNextDue < 10 ? "0" + String.valueOf(iMinutesNextDue) : String.valueOf(iMinutesNextDue);
-
-                                int iMinutesNextExecute = schedule.getNextExecute().get(Calendar.MINUTE);
-                                String sMinutesNextExecute = iMinutesNextExecute < 10 ? "0" + String.valueOf(iMinutesNextExecute) : String.valueOf(iMinutesNextExecute);
-
-                                showDetails.setMessage("frame: " + schedule.get_frame()
-                                        + "\n" + "state: " + schedule.get_state()
-                                        + "\n" + "repeatEnabled: " + schedule.getRepeatEnable()
-                                        + "\n" + "repeatEvery: " + schedule.getRepeatValue() + " " + schedule.getRepeatType()
-                                        + "\n" + "prepWindow: " + schedule.getPrepWindow()
-                                        + "\n" + "prepWindowType: " + schedule.getPrepWindowType()
-                                        + "\n" + "prepCount: " + schedule.getPrepCount()
-                                        + "\n" + "nD: " + String.valueOf(schedule.getNextDue().get(Calendar.MONTH) + 1) + "/" + String.valueOf(schedule.getNextDue().get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(schedule.getNextDue().get(Calendar.YEAR)) + " " + String.valueOf(schedule.getNextDue().get(Calendar.HOUR_OF_DAY)) + ":" + sMinutesNextDue
-                                        + "\n" + "nE: " + String.valueOf(schedule.getNextExecute().get(Calendar.MONTH) + 1) + "/" + String.valueOf(schedule.getNextExecute().get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(schedule.getNextExecute().get(Calendar.YEAR)) + " " + String.valueOf(schedule.getNextExecute().get(Calendar.HOUR_OF_DAY)) + ":" + sMinutesNextExecute
-                                );
-
-                                showDetails.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.cancel();
-                                    }
-                                });
-                                showDetails.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.cancel();
-                                    }
-                                });
-
-                                showDetails.show();
-                            }
-                        }
-                    });
-                    alertOptions.setCancelable(true);
-                    alertOptions.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    });
-                    alertOptions.show();
-                }
-            });
-        }
     }
 
-    public void setup_games(final View rootView, String category) {
+    public void setup_games(final View rootView) {
         super.setup(rootView, category);
 
         List<Games> games;
@@ -253,180 +127,47 @@ public class SchedulePopulator extends AbstractPopulator {
                     }
                 });
                 alertOptions.show();
-
             }
         });
     }
 
-    public void setup_events(final View rootView, String category) {
+    public void setup_ontrack(final View rootView) {
         super.setup(rootView, category);
 
-        SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
+        final View dialog = rootView;
 
-        String sql = "SELECT DISTINCT subcategory FROM core_tbl_schedule WHERE category='"
-                        + category + "' ORDER BY subcategory";
-        Cursor cursor = database.rawQuery(sql, new String[0]);
-
-        List<String> lsCategories = new ArrayList<String>();
-        if(cursor.moveToFirst()){
-            do {
-                lsCategories.add(cursor.getString(0));
-            } while (cursor.moveToNext());
-        }
-
-        //fix - android.database.CursorWindowAllocationException Start
-        cursor.close();
-        //fix - android.database.CursorWindowAllocationException End
-
-        final Spinner spinCategory = ((Spinner)rootView.findViewById(R.id.events_category));
         final ListView listView = ((ListView) rootView.findViewById(R.id.schedule_list));
 
-        ArrayAdapter<String> adapterCategory = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, lsCategories);
-        adapterCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinCategory.setAdapter(adapterCategory);
+        final ToggleButton btnOnTrack1 = ((ToggleButton) dialog.findViewById(R.id.btnOnTrack1));
+        final ToggleButton btnOnTrack2 = ((ToggleButton) dialog.findViewById(R.id.btnOnTrack2));
 
-        final View dialog = rootView;
-        final String sCat = category;
-        spinCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        btnOnTrack1.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onClick(View view) {
+                if(btnOnTrack1.isChecked()) {
+                    btnOnTrack2.setChecked(false);
 
-                String sCat2 = ((Spinner) dialog.findViewById(R.id.events_category)).getSelectedItem().toString();
-
-                List<Schedule> schedules = new List<Schedule>() {
-                    @Override
-                    public void add(int i, Schedule selfTalk) {
-
-                    }
-
-                    @Override
-                    public boolean add(Schedule selfTalk) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean addAll(int i, Collection<? extends Schedule> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean addAll(Collection<? extends Schedule> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public void clear() {
-
-                    }
-
-                    @Override
-                    public boolean contains(Object o) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean containsAll(Collection<?> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public Schedule get(int i) {
-                        return null;
-                    }
-
-                    @Override
-                    public int indexOf(Object o) {
-                        return 0;
-                    }
-
-                    @Override
-                    public boolean isEmpty() {
-                        return false;
-                    }
-
-                    @NonNull
-                    @Override
-                    public Iterator<Schedule> iterator() {
-                        return null;
-                    }
-
-                    @Override
-                    public int lastIndexOf(Object o) {
-                        return 0;
-                    }
-
-                    @Override
-                    public ListIterator<Schedule> listIterator() {
-                        return null;
-                    }
-
-                    @NonNull
-                    @Override
-                    public ListIterator<Schedule> listIterator(int i) {
-                        return null;
-                    }
-
-                    @Override
-                    public Schedule remove(int i) {
-                        return null;
-                    }
-
-                    @Override
-                    public boolean remove(Object o) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean removeAll(Collection<?> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean retainAll(Collection<?> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public Schedule set(int i, Schedule selfTalk) {
-                        return null;
-                    }
-
-                    @Override
-                    public int size() {
-                        return 0;
-                    }
-
-                    @NonNull
-                    @Override
-                    public List<Schedule> subList(int i, int i1) {
-                        return null;
-                    }
-
-                    @NonNull
-                    @Override
-                    public Object[] toArray() {
-                        return new Object[0];
-                    }
-
-                    @NonNull
-                    @Override
-                    public <T> T[] toArray(T[] ts) {
-                        return null;
-                    }
-                };
-
-                schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", sCat2);
-                listView.setAdapter(new ScheduleListAdapter(context, schedules));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnOnTrack1.getTextOn().toString());
+                    listView.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
             }
         });
 
-        List<Schedule> schedules;
-        schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", sCat);
+        btnOnTrack2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(btnOnTrack2.isChecked()) {
+                    btnOnTrack1.setChecked(false);
+
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnOnTrack2.getTextOn().toString());
+                    listView.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+            }
+        });
+
+        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", "events");
         listView.setAdapter(new ScheduleListAdapter(context, schedules));
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -547,229 +288,278 @@ public class SchedulePopulator extends AbstractPopulator {
         });
     }
 
-    public void setup_contacts(final View rootView, String category) {
+    public void setup_events(final View rootView) {
         super.setup(rootView, category);
 
-        SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
-
-        String sql = "SELECT DISTINCT subcategory FROM core_tbl_schedule WHERE category='"
-                + category + "' ORDER BY subcategory";
-        Cursor cursor = database.rawQuery(sql, new String[0]);
-
-        List<String> lsCategories = new ArrayList<String>();
-        if(cursor.moveToFirst()){
-            do {
-                lsCategories.add(cursor.getString(0));
-            } while (cursor.moveToNext());
-        }
-
-        //fix - android.database.CursorWindowAllocationException Start
-        cursor.close();
-        //fix - android.database.CursorWindowAllocationException End
-
-        final Spinner spinCategory = ((Spinner)rootView.findViewById(R.id.contacts_category));
-        final ListView listViewSt = ((ListView) rootView.findViewById(R.id.schedule_list));
-
-        ArrayAdapter<String> adapterCategory = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, lsCategories);
-        adapterCategory.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinCategory.setAdapter(adapterCategory);
-
         final View dialog = rootView;
-        final String sCat = category;
-        spinCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+        final ListView listView = ((ListView) rootView.findViewById(R.id.schedule_list));
+
+        final ToggleButton btnEvents1 = ((ToggleButton) dialog.findViewById(R.id.btnEvents1));
+        final ToggleButton btnEvents2 = ((ToggleButton) dialog.findViewById(R.id.btnEvents2));
+        final ToggleButton btnEvents3 = ((ToggleButton) dialog.findViewById(R.id.btnEvents3));
+        final ToggleButton btnEvents4 = ((ToggleButton) dialog.findViewById(R.id.btnEvents4));
+        final ToggleButton btnEvents5 = ((ToggleButton) dialog.findViewById(R.id.btnEvents5));
+
+        btnEvents1.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onClick(View view) {
+                if(btnEvents1.isChecked()) {
+                    btnEvents2.setChecked(false);
+                    btnEvents3.setChecked(false);
+                    btnEvents4.setChecked(false);
+                    btnEvents5.setChecked(false);
 
-                String sCat2 = ((Spinner) dialog.findViewById(R.id.contacts_category)).getSelectedItem().toString();
-
-                List<Schedule> schedules = new List<Schedule>() {
-                    @Override
-                    public void add(int i, Schedule selfTalk) {
-
-                    }
-
-                    @Override
-                    public boolean add(Schedule selfTalk) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean addAll(int i, Collection<? extends Schedule> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean addAll(Collection<? extends Schedule> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public void clear() {
-
-                    }
-
-                    @Override
-                    public boolean contains(Object o) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean containsAll(Collection<?> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public Schedule get(int i) {
-                        return null;
-                    }
-
-                    @Override
-                    public int indexOf(Object o) {
-                        return 0;
-                    }
-
-                    @Override
-                    public boolean isEmpty() {
-                        return false;
-                    }
-
-                    @NonNull
-                    @Override
-                    public Iterator<Schedule> iterator() {
-                        return null;
-                    }
-
-                    @Override
-                    public int lastIndexOf(Object o) {
-                        return 0;
-                    }
-
-                    @Override
-                    public ListIterator<Schedule> listIterator() {
-                        return null;
-                    }
-
-                    @NonNull
-                    @Override
-                    public ListIterator<Schedule> listIterator(int i) {
-                        return null;
-                    }
-
-                    @Override
-                    public Schedule remove(int i) {
-                        return null;
-                    }
-
-                    @Override
-                    public boolean remove(Object o) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean removeAll(Collection<?> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean retainAll(Collection<?> collection) {
-                        return false;
-                    }
-
-                    @Override
-                    public Schedule set(int i, Schedule selfTalk) {
-                        return null;
-                    }
-
-                    @Override
-                    public int size() {
-                        return 0;
-                    }
-
-                    @NonNull
-                    @Override
-                    public List<Schedule> subList(int i, int i1) {
-                        return null;
-                    }
-
-                    @NonNull
-                    @Override
-                    public Object[] toArray() {
-                        return new Object[0];
-                    }
-
-                    @NonNull
-                    @Override
-                    public <T> T[] toArray(T[] ts) {
-                        return null;
-                    }
-                };
-
-                schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", sCat2);
-                listViewSt.setAdapter(new ScheduleListAdapter(context, schedules));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents1.getTextOn().toString());
+                    listView.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
             }
         });
 
-        listViewSt.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        btnEvents2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(btnEvents2.isChecked()) {
+                    btnEvents1.setChecked(false);
+                    btnEvents3.setChecked(false);
+                    btnEvents4.setChecked(false);
+                    btnEvents5.setChecked(false);
+
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents2.getTextOn().toString());
+                    listView.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+            }
+        });
+
+        btnEvents3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(btnEvents3.isChecked()) {
+                    btnEvents1.setChecked(false);
+                    btnEvents2.setChecked(false);
+                    btnEvents4.setChecked(false);
+                    btnEvents5.setChecked(false);
+
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents3.getTextOn().toString());
+                    listView.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+            }
+        });
+
+        btnEvents4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(btnEvents4.isChecked()) {
+                    btnEvents1.setChecked(false);
+                    btnEvents2.setChecked(false);
+                    btnEvents3.setChecked(false);
+                    btnEvents5.setChecked(false);
+
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents4.getTextOn().toString());
+                    listView.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+            }
+        });
+
+        btnEvents5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(btnEvents5.isChecked()) {
+                    btnEvents1.setChecked(false);
+                    btnEvents2.setChecked(false);
+                    btnEvents3.setChecked(false);
+                    btnEvents4.setChecked(false);
+
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents5.getTextOn().toString());
+                    listView.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+            }
+        });
+
+        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", "events");
+        listView.setAdapter(new ScheduleListAdapter(context, schedules));
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final Schedule sched = (Schedule) listViewSt.getItemAtPosition(i);
+                final Schedule schedule = (Schedule) listView.getItemAtPosition(i);
                 AlertDialog.Builder alertOptions = new AlertDialog.Builder(context);
                 List<String> optsList = new ArrayList<String>();
 
                 optsList.add("Edit");
+                optsList.add("Postpone");
 
-                if (sched.get_state().equalsIgnoreCase("active")) {
+                if (schedule.get_state().equalsIgnoreCase("active")) {
                     optsList.add("Deactivate");
-                } else if (sched.get_state().equalsIgnoreCase("inactive")) {
+                } else if (schedule.get_state().equalsIgnoreCase("inactive")) {
                     optsList.add("Activate");
                 }
 
                 optsList.add("Delete");
+
+                optsList.add("Show Details");
 
                 final String[] options = optsList.toArray(new String[]{});
                 alertOptions.setAdapter(new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, android.R.id.text1, options), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
-                        if (options[i].equalsIgnoreCase("EDIT")) {
+                        if (options[i].equalsIgnoreCase("POSTPONE")) {
+                            AlertDialog.Builder postponeMinutes = new AlertDialog.Builder(context);
+                            postponeMinutes.setTitle("Postpone");
+                            postponeMinutes.setMessage("Minutes; varia");
+                            final EditText input = new EditText(context);
+                            postponeMinutes.setView(input);
 
-                            new NewWizardDialog(context, sched).show();
+                            postponeMinutes.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Calendar nextExecute = schedule.getNextExecute();
+                                    nextExecute.add(Calendar.MINUTE, Integer.parseInt(input.getText().toString()));
+                                    schedule.setNextExecute(nextExecute);
+                                    scheduleHelper.update(schedule);
+                                }
+                            });
+                            postponeMinutes.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
 
+                            postponeMinutes.show();
+
+                        } else if (options[i].equalsIgnoreCase("EDIT")) {
+                            new NewWizardDialog(context, schedule).show();
                         } else if (options[i].equalsIgnoreCase("DELETE")) {
                             Toast.makeText(context, "Schedule deleted.", Toast.LENGTH_SHORT).show();
-                            scheduleHelper.delete(sched.get_id());
+                            scheduleHelper.delete(schedule.get_id());
                             ((MainActivity) context).getSchedulePopulator().resetup();
                             dialogInterface.dismiss();
+                        } else if (options[i].equalsIgnoreCase("ACTIVATE")) {
+                            schedule.set_state("active");
+                            //fix - Multiple duplication of schedules Start
+                            scheduleHelper.update(schedule);
+                            //fix - Multiple duplication of schedules End
+                            ((MainActivity) context).getSchedulePopulator().resetup();
+                        } else if (options[i].equalsIgnoreCase("DEACTIVATE")) {
+                            schedule.set_state("inactive");
+                            //fix - Multiple duplication of schedules Start
+                            scheduleHelper.update(schedule);
+                            //fix - Multiple duplication of schedules End
+                            ((MainActivity) context).getSchedulePopulator().resetup();
+                        } else if (options[i].equalsIgnoreCase("SHOW DETAILS")) {
+                            AlertDialog.Builder showDetails = new AlertDialog.Builder(context);
+                            showDetails.setTitle("Show Details");
 
+                            int iMinutesNextDue = schedule.getNextDue().get(Calendar.MINUTE);
+                            String sMinutesNextDue = iMinutesNextDue < 10 ? "0" + String.valueOf(iMinutesNextDue) : String.valueOf(iMinutesNextDue);
+
+                            int iMinutesNextExecute = schedule.getNextExecute().get(Calendar.MINUTE);
+                            String sMinutesNextExecute = iMinutesNextExecute < 10 ? "0" + String.valueOf(iMinutesNextExecute) : String.valueOf(iMinutesNextExecute);
+
+                            showDetails.setMessage("frame: " + schedule.get_frame()
+                                    + "\n" + "state: " + schedule.get_state()
+                                    + "\n" + "repeatEnabled: " + schedule.getRepeatEnable()
+                                    + "\n" + "repeatEvery: " + schedule.getRepeatValue() + " " + schedule.getRepeatType()
+                                    + "\n" + "prepWindow: " + schedule.getPrepWindow()
+                                    + "\n" + "prepWindowType: " + schedule.getPrepWindowType()
+                                    + "\n" + "prepCount: " + schedule.getPrepCount()
+                                    + "\n" + "nD: " + String.valueOf(schedule.getNextDue().get(Calendar.MONTH) + 1) + "/" + String.valueOf(schedule.getNextDue().get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(schedule.getNextDue().get(Calendar.YEAR)) + " " + String.valueOf(schedule.getNextDue().get(Calendar.HOUR_OF_DAY)) + ":" + sMinutesNextDue
+                                    + "\n" + "nE: " + String.valueOf(schedule.getNextExecute().get(Calendar.MONTH) + 1) + "/" + String.valueOf(schedule.getNextExecute().get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(schedule.getNextExecute().get(Calendar.YEAR)) + " " + String.valueOf(schedule.getNextExecute().get(Calendar.HOUR_OF_DAY)) + ":" + sMinutesNextExecute
+                            );
+
+                            showDetails.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+                            showDetails.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+
+                            showDetails.show();
                         }
                     }
                 });
-
                 alertOptions.setCancelable(true);
                 alertOptions.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
                     }
                 });
                 alertOptions.show();
+            }
+        });
+    }
 
+    public void setup_contacts(final View rootView) {
+
+        final ListView listViewContacts = ((ListView) rootView.findViewById(R.id.schedule_list));
+
+        final View dialog = rootView;
+
+        final ToggleButton btnContacts1 = ((ToggleButton) dialog.findViewById(R.id.btnContacts1));
+        final ToggleButton btnContacts2 = ((ToggleButton) dialog.findViewById(R.id.btnContacts2));
+        final ToggleButton btnContacts3 = ((ToggleButton) dialog.findViewById(R.id.btnContacts3));
+
+        btnContacts1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(btnContacts1.isChecked()) {
+                    btnContacts2.setChecked(false);
+                    btnContacts3.setChecked(false);
+
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnContacts1.getTextOn().toString());
+                    listViewContacts.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
             }
         });
 
-        List<Schedule> schedules;
-        schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", sCat);
-        final ListView listView = ((ListView) rootView.findViewById(R.id.schedule_list));
-        listView.setAdapter(new ScheduleListAdapter(context, schedules));
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        btnContacts2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(btnContacts2.isChecked()) {
+                    btnContacts1.setChecked(false);
+                    btnContacts3.setChecked(false);
+
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnContacts2.getTextOn().toString());
+                    listViewContacts.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+            }
+        });
+
+        btnContacts3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(btnContacts3.isChecked()) {
+                    btnContacts1.setChecked(false);
+                    btnContacts2.setChecked(false);
+
+                    List<Schedule> schedules =
+                            (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnContacts3.getTextOn().toString());
+                    listViewContacts.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+            }
+        });
+
+        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", "contacts");
+        listViewContacts.setAdapter(new ScheduleListAdapter(context, schedules));
+        listViewContacts.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final Schedule schedule = (Schedule) listView.getItemAtPosition(i);
+                final Schedule schedule = (Schedule) listViewContacts.getItemAtPosition(i);
                 AlertDialog.Builder alertOptions = new AlertDialog.Builder(context);
                 List<String> optsList = new ArrayList<String>();
 
@@ -896,8 +686,13 @@ public class SchedulePopulator extends AbstractPopulator {
         String sSubCategory = ((MainActivity) (context)).sSelectedSubcat;
 
         if (sCategory.length() > 0) {
-
-            String sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCategory + "' ORDER BY subcat";
+            String sql2 = "";
+            if(sCategory.equalsIgnoreCase("PLAYER")) {
+                sql2 = "SELECT DISTINCT cat FROM core_tbl_player ORDER BY cat";
+            }
+            else {
+                sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCategory + "' ORDER BY subcat";
+            }
 
             SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
             Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
@@ -917,16 +712,20 @@ public class SchedulePopulator extends AbstractPopulator {
             listViewSubcategory.setAdapter(adapterSubcat);
 
             ///////////////////////////////////////////
+            if(sCategory.equalsIgnoreCase("PLAYER")) {
 
-            List<SearchEntry> keys = new ArrayList<SearchEntry>();
-            keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, sCategory));
-
-            if(sSubCategory.length() > 0) {
-                keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubCategory));
             }
+            else {
+                List<SearchEntry> keys = new ArrayList<SearchEntry>();
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, sCategory));
 
-            List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
-            listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
+                if (sSubCategory.length() > 0) {
+                    keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubCategory));
+                }
+
+                List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
+                listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
+            }
         }
 
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
@@ -945,37 +744,50 @@ public class SchedulePopulator extends AbstractPopulator {
         cursor.close();
         //fix - android.database.CursorWindowAllocationException End
 
+        //m/ we are using the view to
+        // mask the fact that items in
+        // the player category are
+        // coming from a different table
+        listCat.add("player");
+
         ArrayAdapter<String> adapterCat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listCat);
         listViewCategory.setAdapter(adapterCat);
         listViewCategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String sCat = listViewCategory.getItemAtPosition(i).toString();
-                ((MainActivity)context).sSelectedCat = sCat;
-                ((MainActivity)context).sSelectedSubcat = "";
+            String sCat = listViewCategory.getItemAtPosition(i).toString();
 
-                String sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCat + "' ORDER BY subcat";
+            String sql2 = "";
 
-                SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
-                Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
+            if(sCat.equalsIgnoreCase("PLAYER")) {
+                sql2 = "SELECT DISTINCT cat FROM core_tbl_player ORDER BY cat";
+            }
+            else {
+                sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCat + "' ORDER BY subcat";
+            }
 
-                List<String> listSubcat = new ArrayList<String>();
-                if(cursor2.moveToFirst()){
-                    do {
-                        listSubcat.add(cursor2.getString(0));
-                    } while (cursor2.moveToNext());
-                }
+            ((MainActivity) context).sSelectedCat = sCat;
+            ((MainActivity) context).sSelectedSubcat = "";
 
-                //fix - android.database.CursorWindowAllocationException Start
-                cursor2.close();
-                //fix - android.database.CursorWindowAllocationException End
+            SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
+            Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
 
-                ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
-                listViewSubcategory.setAdapter(adapterSubcat);
+            List<String> listSubcat = new ArrayList<String>();
+            if (cursor2.moveToFirst()) {
+                do {
+                    listSubcat.add(cursor2.getString(0));
+                } while (cursor2.moveToNext());
+            }
 
-                List<NonSched> nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat);
-                listViewLibrary.setAdapter(new NonSchedListAdapter(context, nonSched));
+            //fix - android.database.CursorWindowAllocationException Start
+            cursor2.close();
+            //fix - android.database.CursorWindowAllocationException End
 
+            ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
+            listViewSubcategory.setAdapter(adapterSubcat);
+
+            List<NonSched> nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat);
+            listViewLibrary.setAdapter(new NonSchedListAdapter(context, nonSched));
             }
         });
 

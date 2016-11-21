@@ -4,13 +4,12 @@
     <string name="app_name">HabitAid</string>
     <string name="title_section_events">Events</string>
     <string name="title_section_contacts">Contacts</string>
-    <string name="title_section_monitor">Monitor</string>
     <string name="title_section_history">History</string>
     <string name="title_section_game">Games</string>
     <string name="title_section_library">Library</string>
     <string name="title_section_new_player">New Player</string>
     <string name="title_section_player">Player</string>
-    <string name="title_section_today">Today</string>
+    <string name="title_section_ontrack">On Track</string>
     <string name="title_section_setting">Settings</string>
 
     <string name="navigation_drawer_open">Open drawer</string>
@@ -38,9 +37,11 @@
     </string-array>
 
     <string-array name="event_categories">
-        <item>Maint</item>
-        <item>Going</item>
+        <item>Toda</item>
+        <item>Mon</item>
+        <item>Out</item>
         <item>Apt</item>
+        <item>Maint</item>
         <item>Financ</item>
         <item>Birt</item>
         <item>Holid</item>
