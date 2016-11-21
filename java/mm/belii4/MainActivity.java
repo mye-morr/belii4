@@ -55,11 +55,10 @@ public class MainActivity extends ActionBarActivity
     private HistoryPopulator historyPopulator;
     private SchedulePopulator schedulePopulator;
 
-    public String sSelectedCat = "";
-    public String sSelectedSubcat = "";
-
-    private ToggleButton mBtnCurrentToggleEvents;
-
+    public String sSelectedLibraryCat = "";
+    public String sSelectedLibrarySubcat = "";
+    public String sSelectedPlayerCat = "";
+    public String sSelectedPlayerSubcat = "";
 
     public HistoryPopulator getHistoryPopulator() {
         return historyPopulator;
@@ -263,8 +262,14 @@ public class MainActivity extends ActionBarActivity
             case R.id.action_clear_games:
                 schedulePopulator.setupClearGames();
                 break;
-            case R.id.action_schedule_new_library:
+            case R.id.action_library_new:
                 schedulePopulator.setupNew("library");
+                break;
+            case R.id.action_library_list:
+                schedulePopulator.resetup("library");
+                break;
+            case R.id.action_library_player:
+                schedulePopulator.resetup("player");
                 break;
             case R.id.action_schedule_new_ontrack:
                 schedulePopulator.setupNew("ontrack");
@@ -319,11 +324,11 @@ public class MainActivity extends ActionBarActivity
 
                 case PAGE_EVENTS:
                     rootView = inflater.inflate(R.layout.fragment_schedule_events, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_events(rootView);
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "events");
                     break;
                 case PAGE_CONTACTS:
                     rootView = inflater.inflate(R.layout.fragment_schedule_contacts, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_contacts(rootView);
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "contacts");
                     break;
                 case PAGE_HISTORY:
                     rootView = inflater.inflate(R.layout.fragment_overview, container, false);
@@ -331,23 +336,23 @@ public class MainActivity extends ActionBarActivity
                     break;
                 case PAGE_GAMES:
                     rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_games(rootView);
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "games");
                     break;
                 case PAGE_LIBRARY:
                     rootView = inflater.inflate(R.layout.fragment_schedule_library, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_library(rootView, "library");
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "library");
                     break;
                 case PAGE_NEW_PLAYER:
-                    rootView = inflater.inflate(R.layout.fragment_schedule_new_player, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_new_player(rootView);
+                    rootView = inflater.inflate(R.layout.fragment_schedule_library, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "player");
                     break;
                 case PAGE_PLAYER:
-                    rootView = inflater.inflate(R.layout.fragment_schedule_player, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_player(rootView);
+                    rootView = inflater.inflate(R.layout.fragment_schedule_old_player, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "old_player");
                     break;
                 case PAGE_ONTRACK:
                     rootView = inflater.inflate(R.layout.fragment_schedule_ontrack, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup_ontrack(rootView);
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "ontrack");
                     break;
                 case PAGE_SETTING:
                     ((MainActivity)context).startSettingsActivity();

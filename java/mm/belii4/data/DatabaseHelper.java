@@ -8,15 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mm.belii4.data.core.ContactItemHelper;
+import mm.belii4.data.core.ContentHelper;
 import mm.belii4.data.core.GamesHelper;
 import mm.belii4.data.core.MessageHelper;
 import mm.belii4.data.core.PlayerHelper;
 import mm.belii4.data.core.NonSchedHelper;
 import mm.belii4.data.core.ScheduleHelper;
 
-/**
- * Created by farflk on 6/18/2014.
- */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     static final String dbName = "schedule_sms_db";
@@ -34,6 +32,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             databaseHelper.modelHelpers.add(new ContactItemHelper(context));
             databaseHelper.modelHelpers.add(new GamesHelper(context));
             databaseHelper.modelHelpers.add(new PlayerHelper(context));
+            databaseHelper.modelHelpers.add(new ContentHelper(context));
         }
     }
 

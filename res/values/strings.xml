@@ -38,7 +38,7 @@
 
     <string-array name="event_categories">
         <item>Toda</item>
-        <item>Mon</item>
+        <item>Monit</item>
         <item>Out</item>
         <item>Apt</item>
         <item>Maint</item>

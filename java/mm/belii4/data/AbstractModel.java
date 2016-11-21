@@ -54,7 +54,6 @@ public class AbstractModel {
         this._id = fetchData(data, "_id");
         this._state = fetchData(data, "_state");
         this._frame = fetchData(data, "_frame");
-
     }
 
     public void populateWith(Cursor cursor, List<String> columns) {

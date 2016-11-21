@@ -254,7 +254,7 @@ public class NewWizardDialog extends WizardDialog {
                         nonSched.setName(sName);
                         nonSched.setContent(sContent);
 
-                        ((MainActivity) (context)).sSelectedCat = sCategory;
+                        ((MainActivity) (context)).sSelectedLibraryCat = sCategory;
 
                         if (DatabaseHelper.getInstance().getHelper(NonSchedHelper.class).createOrUpdate(nonSched)) {
                             Toast.makeText(context, "Self-talk saved.", Toast.LENGTH_SHORT).show();
@@ -264,7 +264,7 @@ public class NewWizardDialog extends WizardDialog {
                         }
                     }
 
-                    ((MainActivity) context).getSchedulePopulator().resetup();
+                    ((MainActivity) context).getSchedulePopulator().resetup("library");
 
                     dismiss();
                 }
@@ -404,7 +404,7 @@ public class NewWizardDialog extends WizardDialog {
             setRightButton("Add", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    schedule.setCategory(category);
+                    schedule.setCategory("contacts");
                     schedule.setSubcategory(spinCat.getSelectedItem().toString());
 
                     final EditText etMessage = ((EditText)dialog.findViewById(R.id.new_wizard_1step_contact_message));
@@ -440,7 +440,6 @@ public class NewWizardDialog extends WizardDialog {
 
                     ((MainActivity) context).getSchedulePopulator().resetup();
                     dismiss();
-
                 }
             });
 
@@ -453,8 +452,6 @@ public class NewWizardDialog extends WizardDialog {
         }
 
     }
-
-/***********************************************************************************/
 
     class DialogStep_1Step_Events extends DialogStep {
 

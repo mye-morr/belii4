@@ -1,6 +1,7 @@
 package mm.belii4.form.schedule;
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.PowerManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,13 +35,18 @@ import mm.belii4.data.core.Games;
 import mm.belii4.data.core.GamesHelper;
 import mm.belii4.data.core.NonSched;
 import mm.belii4.data.core.NonSchedHelper;
+import mm.belii4.data.core.Player;
 import mm.belii4.data.core.PlayerHelper;
 import mm.belii4.data.core.Schedule;
 import mm.belii4.data.core.ScheduleHelper;
 import mm.belii4.form.AbstractPopulator;
 import mm.belii4.form.NewWizardDialog;
 
-public class SchedulePopulator extends AbstractPopulator {
+public class SchedulePopulator {
+    protected Context context;
+    protected View rootView;
+    protected String category;
+
     protected ScheduleHelper scheduleHelper;
     protected NonSchedHelper nonSchedHelper;
     protected GamesHelper gamesHelper;
@@ -52,10 +59,21 @@ public class SchedulePopulator extends AbstractPopulator {
     private static DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    protected String sCategory;
+    public void setupNew(String sCategory){
+        new NewWizardDialog(context, sCategory).show();
+    }
+
+    public void resetup() {
+        setup(rootView, category);
+    }
+
+    public void resetup(String category){
+        setup(rootView, category);
+    }
 
     public SchedulePopulator(Context context) {
-        super(context);
+        this.context = context;
+
         this.scheduleHelper = DatabaseHelper.getInstance().getHelper(ScheduleHelper.class);
         this.nonSchedHelper = DatabaseHelper.getInstance().getHelper(NonSchedHelper.class);
         this.gamesHelper = DatabaseHelper.getInstance().getHelper(GamesHelper.class);
@@ -64,11 +82,11 @@ public class SchedulePopulator extends AbstractPopulator {
         this.calSimulate = Calendar.getInstance();
     }
 
-    @Override
     public void setup(View rootView, String category) {
-        super.setup(rootView, category);
+        this.rootView = rootView;
+        this.category = category;
 
-        if(category.equals("ontask")) {
+        if(category.equals("ontrack")) {
             setup_ontrack(rootView);
         }
         else if(category.equals("events")) {
@@ -81,15 +99,17 @@ public class SchedulePopulator extends AbstractPopulator {
             setup_games(rootView);
         }
         else if(category.equals("library")) {
-            setup_library(rootView, category);
+            setup_library(rootView, "library");
         }
         else if(category.equals("player")) {
-            setup_player(rootView);
+            setup_library(rootView, "player");
+        }
+        else if(category.equals("old_player")) {
+            setup_old_player(rootView);
         }
     }
 
     public void setup_games(final View rootView) {
-        super.setup(rootView, category);
 
         List<Games> games;
         games = (List<Games>) (List<?>) gamesHelper.findAll();
@@ -132,7 +152,6 @@ public class SchedulePopulator extends AbstractPopulator {
     }
 
     public void setup_ontrack(final View rootView) {
-        super.setup(rootView, category);
 
         final View dialog = rootView;
 
@@ -151,6 +170,9 @@ public class SchedulePopulator extends AbstractPopulator {
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnOnTrack1.getTextOn().toString());
                     listView.setAdapter(new ScheduleListAdapter(context, schedules));
                 }
+                else {
+                    btnOnTrack1.setChecked(true);
+                }
             }
         });
 
@@ -164,10 +186,14 @@ public class SchedulePopulator extends AbstractPopulator {
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnOnTrack2.getTextOn().toString());
                     listView.setAdapter(new ScheduleListAdapter(context, schedules));
                 }
+                else {
+                    btnOnTrack2.setChecked(true);
+                }
             }
         });
 
-        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", "events");
+        btnOnTrack2.setChecked(true);
+        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnOnTrack2.getTextOn().toString());
         listView.setAdapter(new ScheduleListAdapter(context, schedules));
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -289,7 +315,6 @@ public class SchedulePopulator extends AbstractPopulator {
     }
 
     public void setup_events(final View rootView) {
-        super.setup(rootView, category);
 
         final View dialog = rootView;
 
@@ -314,6 +339,9 @@ public class SchedulePopulator extends AbstractPopulator {
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents1.getTextOn().toString());
                     listView.setAdapter(new ScheduleListAdapter(context, schedules));
                 }
+                else {
+                    btnEvents1.setChecked(true);
+                }
             }
         });
 
@@ -329,6 +357,9 @@ public class SchedulePopulator extends AbstractPopulator {
                     List<Schedule> schedules =
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents2.getTextOn().toString());
                     listView.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+                else {
+                    btnEvents2.setChecked(true);
                 }
             }
         });
@@ -346,6 +377,9 @@ public class SchedulePopulator extends AbstractPopulator {
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents3.getTextOn().toString());
                     listView.setAdapter(new ScheduleListAdapter(context, schedules));
                 }
+                else {
+                    btnEvents3.setChecked(true);
+                }
             }
         });
 
@@ -362,6 +396,9 @@ public class SchedulePopulator extends AbstractPopulator {
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents4.getTextOn().toString());
                     listView.setAdapter(new ScheduleListAdapter(context, schedules));
                 }
+                else {
+                    btnEvents4.setChecked(true);
+                }
             }
         });
 
@@ -377,6 +414,9 @@ public class SchedulePopulator extends AbstractPopulator {
                     List<Schedule> schedules =
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnEvents5.getTextOn().toString());
                     listView.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+                else {
+                    btnEvents5.setChecked(true);
                 }
             }
         });
@@ -504,9 +544,9 @@ public class SchedulePopulator extends AbstractPopulator {
 
     public void setup_contacts(final View rootView) {
 
-        final ListView listViewContacts = ((ListView) rootView.findViewById(R.id.schedule_list));
-
         final View dialog = rootView;
+
+        final ListView listViewContacts = ((ListView) rootView.findViewById(R.id.schedule_list));
 
         final ToggleButton btnContacts1 = ((ToggleButton) dialog.findViewById(R.id.btnContacts1));
         final ToggleButton btnContacts2 = ((ToggleButton) dialog.findViewById(R.id.btnContacts2));
@@ -523,6 +563,9 @@ public class SchedulePopulator extends AbstractPopulator {
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnContacts1.getTextOn().toString());
                     listViewContacts.setAdapter(new ScheduleListAdapter(context, schedules));
                 }
+                else {
+                    btnContacts1.setChecked(true);
+                }
             }
         });
 
@@ -536,6 +579,9 @@ public class SchedulePopulator extends AbstractPopulator {
                     List<Schedule> schedules =
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnContacts2.getTextOn().toString());
                     listViewContacts.setAdapter(new ScheduleListAdapter(context, schedules));
+                }
+                else {
+                    btnContacts2.setChecked(true);
                 }
             }
         });
@@ -551,10 +597,14 @@ public class SchedulePopulator extends AbstractPopulator {
                             (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnContacts3.getTextOn().toString());
                     listViewContacts.setAdapter(new ScheduleListAdapter(context, schedules));
                 }
+                else {
+                    btnContacts3.setChecked(true);
+                }
             }
         });
 
-        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", "contacts");
+        btnContacts1.setChecked(true);
+        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnContacts1.getTextOn().toString());
         listViewContacts.setAdapter(new ScheduleListAdapter(context, schedules));
         listViewContacts.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -675,66 +725,42 @@ public class SchedulePopulator extends AbstractPopulator {
         });
     }
 
-    public void setup_library(final View rootView, String category) {
-        super.setup(rootView, category);
+    public void setup_library(final View rootView, final String sCategory) {
 
         final ListView listViewCategory = ((ListView) rootView.findViewById(R.id.schedule_category_list));
         final ListView listViewSubcategory = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
         final ListView listViewLibrary = ((ListView) rootView.findViewById(R.id.schedule_library_list));
 
-        String sCategory = ((MainActivity) (context)).sSelectedCat;
-        String sSubCategory = ((MainActivity) (context)).sSelectedSubcat;
+        String sCat = "";
+        String sSubcat = "";
+        String sTableName = "";
 
-        if (sCategory.length() > 0) {
-            String sql2 = "";
-            if(sCategory.equalsIgnoreCase("PLAYER")) {
-                sql2 = "SELECT DISTINCT cat FROM core_tbl_player ORDER BY cat";
-            }
-            else {
-                sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCategory + "' ORDER BY subcat";
-            }
-
-            SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
-            Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
-
-            List<String> listSubcat = new ArrayList<String>();
-            if(cursor2.moveToFirst()){
-                do {
-                    listSubcat.add(cursor2.getString(0));
-                } while (cursor2.moveToNext());
-            }
-
-            //fix - android.database.CursorWindowAllocationException Start
-            cursor2.close();
-            //fix - android.database.CursorWindowAllocationException End
-
-            ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
-            listViewSubcategory.setAdapter(adapterSubcat);
-
-            ///////////////////////////////////////////
-            if(sCategory.equalsIgnoreCase("PLAYER")) {
-
-            }
-            else {
-                List<SearchEntry> keys = new ArrayList<SearchEntry>();
-                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, sCategory));
-
-                if (sSubCategory.length() > 0) {
-                    keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubCategory));
-                }
-
-                List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
-                listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
-            }
+        boolean bIsLibrary = false;
+        if (sCategory.equalsIgnoreCase("LIBRARY")) {
+            bIsLibrary = true;
         }
+
+        final boolean isLibrary = bIsLibrary;
+
+        if (isLibrary) {
+            sCat = ((MainActivity) (context)).sSelectedLibraryCat;
+            sSubcat = ((MainActivity) (context)).sSelectedLibrarySubcat;
+            sTableName = "core_tbl_nonsched";
+        } else {
+            sCat = ((MainActivity) (context)).sSelectedPlayerCat;
+            sSubcat = ((MainActivity) (context)).sSelectedPlayerSubcat;
+            sTableName = "core_tbl_player";
+        }
+
+        final String tableName = sTableName;
 
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
 
-        String sql = "SELECT DISTINCT cat FROM core_tbl_nonsched ORDER BY cat";
+        String sql = "SELECT DISTINCT cat FROM " + sTableName +" ORDER BY cat";
         Cursor cursor = database.rawQuery(sql, new String[0]);
 
         List<String> listCat = new ArrayList<String>();
-        if(cursor.moveToFirst()){
+        if (cursor.moveToFirst()) {
             do {
                 listCat.add(cursor.getString(0));
             } while (cursor.moveToNext());
@@ -744,30 +770,11 @@ public class SchedulePopulator extends AbstractPopulator {
         cursor.close();
         //fix - android.database.CursorWindowAllocationException End
 
-        //m/ we are using the view to
-        // mask the fact that items in
-        // the player category are
-        // coming from a different table
-        listCat.add("player");
-
         ArrayAdapter<String> adapterCat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listCat);
         listViewCategory.setAdapter(adapterCat);
-        listViewCategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            String sCat = listViewCategory.getItemAtPosition(i).toString();
 
-            String sql2 = "";
-
-            if(sCat.equalsIgnoreCase("PLAYER")) {
-                sql2 = "SELECT DISTINCT cat FROM core_tbl_player ORDER BY cat";
-            }
-            else {
-                sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCat + "' ORDER BY subcat";
-            }
-
-            ((MainActivity) context).sSelectedCat = sCat;
-            ((MainActivity) context).sSelectedSubcat = "";
+        if (sCat.length() > 0) {
+            String sql2 = "SELECT DISTINCT subcat FROM " + sTableName + " WHERE cat='" + sCat + "' ORDER BY subcat";
 
             SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
             Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
@@ -786,7 +793,77 @@ public class SchedulePopulator extends AbstractPopulator {
             ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
             listViewSubcategory.setAdapter(adapterSubcat);
 
-            List<NonSched> nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat);
+            ///////////////////////////////////////////
+            List<SearchEntry> keys = new ArrayList<SearchEntry>();
+            keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, sCat));
+
+            if (sSubcat.length() > 0) {
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubcat));
+            }
+
+            List<NonSched> listNonSched;
+            if(isLibrary) {
+                listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
+            }
+            else {
+                listNonSched = (List<NonSched>) (List<?>) playerHelper.find(keys);
+            }
+
+            listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
+        }
+        else {
+            List<NonSched> listNonSched;
+            if(isLibrary) {
+                listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat","library");
+            }
+            else {
+                listNonSched = (List<NonSched>) (List<?>) playerHelper.findAll();
+            }
+
+            listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
+        }
+
+        listViewCategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            String sCat = listViewCategory.getItemAtPosition(i).toString();
+
+            if(isLibrary) {
+                ((MainActivity) context).sSelectedLibraryCat = sCat;
+                ((MainActivity) context).sSelectedLibrarySubcat = "";
+            }
+            else {
+                ((MainActivity) context).sSelectedPlayerCat = sCat;
+                ((MainActivity) context).sSelectedPlayerSubcat = "";
+            }
+
+            String sql2 = "SELECT DISTINCT subcat FROM " + tableName + " WHERE cat='" + sCat + "' ORDER BY subcat";
+
+            SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
+            Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
+
+            List<String> listSubcat = new ArrayList<String>();
+            if (cursor2.moveToFirst()) {
+                do {
+                    listSubcat.add(cursor2.getString(0));
+                } while (cursor2.moveToNext());
+            }
+
+            //fix - android.database.CursorWindowAllocationException Start
+            cursor2.close();
+            //fix - android.database.CursorWindowAllocationException End
+
+            ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
+            listViewSubcategory.setAdapter(adapterSubcat);
+
+            List<NonSched> nonSched;
+            if(isLibrary) {
+                nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat);
+            }
+            else {
+                nonSched = (List<NonSched>) (List<?>) playerHelper.findBy("cat", sCat);
+            }
+
             listViewLibrary.setAdapter(new NonSchedListAdapter(context, nonSched));
             }
         });
@@ -795,13 +872,26 @@ public class SchedulePopulator extends AbstractPopulator {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String sSubcat = listViewSubcategory.getItemAtPosition(i).toString();
-                ((MainActivity)context).sSelectedSubcat = sSubcat;
+
+                if(isLibrary) {
+                    ((MainActivity) context).sSelectedLibrarySubcat = sSubcat;
+                }
+                else {
+                    ((MainActivity) context).sSelectedPlayerSubcat = sSubcat;
+                }
 
                 List<SearchEntry> keys = new ArrayList<SearchEntry>();
-                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, ((MainActivity)context).sSelectedCat));
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, ((MainActivity)context).sSelectedLibraryCat));
                 keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubcat));
 
-                List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
+                List<NonSched> listNonSched;
+                if(isLibrary) {
+                    listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
+                }
+                else {
+                    listNonSched = (List<NonSched>) (List<?>) playerHelper.find(keys);
+                }
+
                 listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
             }
         });
@@ -812,6 +902,10 @@ public class SchedulePopulator extends AbstractPopulator {
               final NonSched st = (NonSched) listViewLibrary.getItemAtPosition(i);
               AlertDialog.Builder alertOptions = new AlertDialog.Builder(context);
               List<String> optsList = new ArrayList<String>();
+
+              if(isLibrary) {
+                  optsList.add("Add to Player");
+              }
 
               optsList.add("Edit");
               if (st.get_state().equalsIgnoreCase("active")) {
@@ -826,15 +920,41 @@ public class SchedulePopulator extends AbstractPopulator {
               alertOptions.setAdapter(new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, android.R.id.text1, options), new DialogInterface.OnClickListener() {
                   @Override
                   public void onClick(DialogInterface dialogInterface, int i) {
-
                       if (options[i].equalsIgnoreCase("EDIT")) {
 
                           new NewWizardDialog(context, st).show();
 
-                      } else if (options[i].equalsIgnoreCase("DELETE")) {
+                      }
+                      else if (options[i].equalsIgnoreCase("ADD TO PLAYER")) {
+                          DatabaseHelper dh = DatabaseHelper.getInstance();
+                          SQLiteDatabase database = dh.getWritableDatabase();
+                          ContentValues contentValues = st.getContentValues();
+                          contentValues.remove("_id");
+                          contentValues.put("_id", java.util.UUID.randomUUID().toString());
+                          contentValues.put("wt", "0");
+                          contentValues.put("extpct", "0");
+                          contentValues.put("extthr", "0");
+
+                          Log.i("DB", "Insert into " + "core_tbl_player" + ":" + contentValues.getAsString("_id"));
+                          if (database.insert("core_tbl_player", null, contentValues) > 0) {
+                              Toast.makeText(context, "Added to Player.", Toast.LENGTH_SHORT).show();
+                          }
+                          else {
+                              Toast.makeText(context, "Adding to Player failed.", Toast.LENGTH_SHORT).show();
+                          }
+
+                      }
+                      else if (options[i].equalsIgnoreCase("DELETE")) {
                           Toast.makeText(context, "Schedule deleted.", Toast.LENGTH_SHORT).show();
-                          nonSchedHelper.delete(st.get_id());
-                          ((MainActivity) context).getSchedulePopulator().resetup();
+
+                          if (isLibrary){
+                              nonSchedHelper.delete(st.get_id());
+                          }
+                          else {
+                              playerHelper.delete(st.get_id());
+                          }
+
+                          ((MainActivity) context).getSchedulePopulator().resetup(sCategory);
                           dialogInterface.dismiss();
 
                       }
@@ -854,70 +974,7 @@ public class SchedulePopulator extends AbstractPopulator {
       });
     }
 
-    public void setup_new_player(final View rootView) {
-        super.setup(rootView, category);
-
-        final ListView listViewSubcategory = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
-        final ListView listViewItems = ((ListView) rootView.findViewById(R.id.schedule_item_list));
-        final ListView listViewStrings = ((ListView) rootView.findViewById(R.id.schedule_strings_list));
-
-        SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
-
-        String sql = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='player' ORDER BY subcat";
-        Cursor cursor = database.rawQuery(sql, new String[0]);
-
-        List<String> listSubcat = new ArrayList<String>();
-        if(cursor.moveToFirst()){
-            do {
-                listSubcat.add(cursor.getString(0));
-            } while (cursor.moveToNext());
-        }
-
-        //fix - android.database.CursorWindowAllocationException Start
-        cursor.close();
-        //fix - android.database.CursorWindowAllocationException End
-
-        ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
-        listViewSubcategory.setAdapter(adapterSubcat);
-        listViewSubcategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String sSubcat = listViewSubcategory.getItemAtPosition(i).toString();
-
-                List<SearchEntry> keys = new ArrayList<SearchEntry>();
-                keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, "player"));
-                keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubcat));
-
-                List<NonSched> listNsSubcat = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
-                listViewItems.setAdapter(new NonSchedListAdapter(context, listNsSubcat));
-            }
-        });
-
-        listViewItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                NonSched nsItem = (NonSched)listViewItems.getItemAtPosition(i);
-
-                String sContent = nsItem.getContent();
-                String[] sxStrings = sContent.split("\\n");
-
-                List<NonSched> listNsStrings = new ArrayList<NonSched>();
-
-                NonSched nsString;
-                for(int j=0; j<sxStrings.length; j++) {
-                    nsString = new NonSched();
-                    nsString.set_state("active");
-                    nsString.setCat("player");
-                    nsString.setName(sxStrings[j]);
-                    listNsStrings.add(nsString);
-                }
-                listViewStrings.setAdapter(new NonSchedListAdapter(context, listNsStrings));
-            }
-        });
-    }
-
-    public void setup_player(final View rootView) {
-        super.setup(rootView, "player");
+    public void setup_old_player(final View rootView) {
         final List<NonSched> listPlayer = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat","player");
 
         final EditText etPlayerContent = ((EditText) rootView.findViewById(R.id.etPlayerContent));
@@ -951,7 +1008,7 @@ public class SchedulePopulator extends AbstractPopulator {
                 Toast.makeText(context, "Saving failed.", Toast.LENGTH_SHORT).show();
                 }
 
-                setup_player(rootView);
+                setup_old_player(rootView);
             }
         });
 
@@ -963,7 +1020,7 @@ public class SchedulePopulator extends AbstractPopulator {
                 Toast.makeText(context, "Deleted.", Toast.LENGTH_SHORT).show();
                 nonSchedHelper.delete(nsCurrent.get_id());
 
-                setup_player(rootView);
+                setup_old_player(rootView);
             }
         });
 
@@ -1075,10 +1132,6 @@ public class SchedulePopulator extends AbstractPopulator {
             }
         });
         builder.show();
-    }
-
-    public void setupNew(String sCategory){
-        new NewWizardDialog(context, sCategory).show();
     }
 
     //////////////////////////////////////////////////////////////////////

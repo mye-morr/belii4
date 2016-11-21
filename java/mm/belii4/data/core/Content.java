@@ -29,7 +29,6 @@ public class Content extends AbstractModel {
         nonschedid = fetchData(data, "nonschedid");
         content = fetchData(data, "content");
         weight = fetchDataDouble(data, "weight");
-
     }
 
     public String getNonschedid() {

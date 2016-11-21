@@ -16,8 +16,8 @@
         android:layout_height="match_parent"
         android:id="@+id/btnOnTrack1"
         android:textAllCaps="false"
-        android:textOff="Mon"
-        android:textOn="Mon"
+        android:textOff="Monit"
+        android:textOn="Monit"
         android:checked="false" />
 
     <ToggleButton
