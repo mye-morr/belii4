@@ -331,7 +331,7 @@
             android:textOn="1"
             android:id="@+id/new_wizard_1step_min_1"
             android:layout_marginLeft="10dp"
-            />
+            android:checked="true" />
 
         <ToggleButton
             android:layout_width="30dp"

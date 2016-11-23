@@ -35,11 +35,9 @@ import mm.belii4.data.core.Games;
 import mm.belii4.data.core.GamesHelper;
 import mm.belii4.data.core.NonSched;
 import mm.belii4.data.core.NonSchedHelper;
-import mm.belii4.data.core.Player;
 import mm.belii4.data.core.PlayerHelper;
 import mm.belii4.data.core.Schedule;
 import mm.belii4.data.core.ScheduleHelper;
-import mm.belii4.form.AbstractPopulator;
 import mm.belii4.form.NewWizardDialog;
 
 public class SchedulePopulator {
@@ -192,8 +190,15 @@ public class SchedulePopulator {
             }
         });
 
-        btnOnTrack2.setChecked(true);
-        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnOnTrack2.getTextOn().toString());
+        String sActiveSubcategory = "";
+        if(btnOnTrack1.isChecked()) {
+            sActiveSubcategory = btnOnTrack1.getTextOn().toString();
+        }
+        else {
+            sActiveSubcategory = btnOnTrack2.getTextOn().toString();
+        }
+
+        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", sActiveSubcategory);
         listView.setAdapter(new ScheduleListAdapter(context, schedules));
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -421,7 +426,24 @@ public class SchedulePopulator {
             }
         });
 
-        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("category", "events");
+        String sActiveSubcategory = "";
+        if(btnEvents2.isChecked()) {
+            sActiveSubcategory = btnEvents2.getTextOn().toString();
+        }
+        else if(btnEvents3.isChecked()) {
+            sActiveSubcategory = btnEvents3.getTextOn().toString();
+        }
+        else if(btnEvents4.isChecked()) {
+            sActiveSubcategory = btnEvents4.getTextOn().toString();
+        }
+        else if(btnEvents5.isChecked()) {
+            sActiveSubcategory = btnEvents5.getTextOn().toString();
+        }
+        else {
+            sActiveSubcategory = btnEvents1.getTextOn().toString();
+        }
+
+        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", sActiveSubcategory);
         listView.setAdapter(new ScheduleListAdapter(context, schedules));
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -603,8 +625,18 @@ public class SchedulePopulator {
             }
         });
 
-        btnContacts1.setChecked(true);
-        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", btnContacts1.getTextOn().toString());
+        String sActiveSubcategory = "";
+        if(btnContacts2.isChecked()) {
+            sActiveSubcategory = btnContacts2.getTextOn().toString();
+        }
+        else if (btnContacts3.isChecked()) {
+            sActiveSubcategory = btnContacts3.getTextOn().toString();
+        }
+        else {
+            sActiveSubcategory = btnContacts1.getTextOn().toString();
+        }
+
+        List<Schedule> schedules = (List<Schedule>) (List<?>) scheduleHelper.findBy("subcategory", sActiveSubcategory);
         listViewContacts.setAdapter(new ScheduleListAdapter(context, schedules));
         listViewContacts.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
