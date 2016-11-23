@@ -104,10 +104,10 @@ public class SchedulePopulator {
             setup_library(rootView);
         }
         else if(category.equals("player")) {
-            setup_player(rootView);
+            setup_new_player(rootView);
         }
         else if(category.equals("old_player")) {
-            setup_old_player(rootView);
+            setup_player(rootView);
         }
     }
 
@@ -761,7 +761,7 @@ public class SchedulePopulator {
         });
     }
 
-    public void setup_player(final View rootView) {
+    public void setup_new_player(final View rootView) {
 
         final ListView listViewSubcat = ((ListView) rootView.findViewById(R.id.schedule_category_list));
         final ListView listViewItems = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
@@ -1018,7 +1018,7 @@ public class SchedulePopulator {
       });
     }
 
-    public void setup_old_player(final View rootView) {
+    public void setup_player(final View rootView) {
         final List<NonSched> listPlayer = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat","player");
 
         final EditText etPlayerContent = ((EditText) rootView.findViewById(R.id.etPlayerContent));
@@ -1052,7 +1052,7 @@ public class SchedulePopulator {
                 Toast.makeText(context, "Saving failed.", Toast.LENGTH_SHORT).show();
                 }
 
-                setup_old_player(rootView);
+                setup_player(rootView);
             }
         });
 
@@ -1064,7 +1064,7 @@ public class SchedulePopulator {
                 Toast.makeText(context, "Deleted.", Toast.LENGTH_SHORT).show();
                 nonSchedHelper.delete(nsCurrent.get_id());
 
-                setup_old_player(rootView);
+                setup_player(rootView);
             }
         });
 
