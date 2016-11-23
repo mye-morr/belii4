@@ -481,6 +481,9 @@ public class NewWizardDialog extends WizardDialog {
                         btn_min_3.setChecked(false);
                         btn_min_4.setChecked(false);
                     }
+                    else {
+                        btn_min_1.setChecked(true);
+                    }
                 }
             });
 
@@ -491,6 +494,9 @@ public class NewWizardDialog extends WizardDialog {
                         btn_min_1.setChecked(false);
                         btn_min_3.setChecked(false);
                         btn_min_4.setChecked(false);
+                    }
+                    else {
+                        btn_min_2.setChecked(true);
                     }
                 }
             });
@@ -503,6 +509,9 @@ public class NewWizardDialog extends WizardDialog {
                         btn_min_2.setChecked(false);
                         btn_min_4.setChecked(false);
                     }
+                    else {
+                        btn_min_3.setChecked(true);
+                    }
                 }
             });
 
@@ -514,9 +523,11 @@ public class NewWizardDialog extends WizardDialog {
                         btn_min_2.setChecked(false);
                         btn_min_3.setChecked(false);
                     }
+                    else {
+                        btn_min_4.setChecked(true);
+                    }
                 }
             });
-
 
             final Spinner spinCat = ((Spinner)dialog.findViewById(R.id.events_category));
 

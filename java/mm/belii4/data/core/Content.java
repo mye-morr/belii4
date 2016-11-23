@@ -8,14 +8,14 @@ import mm.belii4.data.AbstractModel;
 
 public class Content extends AbstractModel {
 
-    private String nonschedid = "";
+    private String playerid = "";
     private String content = "";
     private double weight = 0.0;
 
     public ContentValues getContentValues() {
         ContentValues contentValues = super.getContentValues();
 
-        contentValues.put("nonschedid", nonschedid);
+        contentValues.put("playerid", playerid);
         contentValues.put("content", content);
         contentValues.put("weight", weight);
 
@@ -26,17 +26,17 @@ public class Content extends AbstractModel {
     public void populateWith(Map<String, Object> data) {
         super.populateWith(data);
 
-        nonschedid = fetchData(data, "nonschedid");
+        playerid = fetchData(data, "playerid");
         content = fetchData(data, "content");
         weight = fetchDataDouble(data, "weight");
     }
 
-    public String getNonschedid() {
-        return nonschedid;
+    public String getPlayerid() {
+        return playerid;
     }
 
-    public void setNonschedid(String nonschedid) {
-        this.nonschedid = nonschedid;
+    public void setPlayerid(String playerid) {
+        this.playerid = playerid;
     }
 
     public String getContent() {

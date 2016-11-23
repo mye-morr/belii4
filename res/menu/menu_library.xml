@@ -3,18 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity" >
 
-    <item android:id="@+id/action_library_list"
-        android:title="@string/action_schedule_new"
-        android:orderInCategory="100"
-        android:icon="@drawable/action_list"
-        app:showAsAction="always" />
-
-    <item android:id="@+id/action_library_player"
-        android:title="@string/action_schedule_new"
-        android:orderInCategory="100"
-        android:icon="@drawable/action_play"
-        app:showAsAction="always" />
-
     <item android:id="@+id/action_library_new"
         android:title="@string/action_schedule_new"
         android:orderInCategory="100"

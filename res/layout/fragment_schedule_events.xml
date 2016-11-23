@@ -18,7 +18,7 @@
         android:textAllCaps="false"
         android:textOff="Out"
         android:textOn="Out"
-        android:checked="false" />
+        android:checked="true" />
 
     <ToggleButton
         android:layout_width="wrap_content"

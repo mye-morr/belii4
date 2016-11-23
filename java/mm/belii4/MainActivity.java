@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ToggleButton;
 
 import mm.belii4.data.DatabaseHelper;
 import mm.belii4.data.core.ContactItemHelper;
@@ -265,12 +264,6 @@ public class MainActivity extends ActionBarActivity
             case R.id.action_library_new:
                 schedulePopulator.setupNew("library");
                 break;
-            case R.id.action_library_list:
-                schedulePopulator.resetup("library");
-                break;
-            case R.id.action_library_player:
-                schedulePopulator.resetup("player");
-                break;
             case R.id.action_schedule_new_ontrack:
                 schedulePopulator.setupNew("ontrack");
                 break;
@@ -344,11 +337,11 @@ public class MainActivity extends ActionBarActivity
                     break;
                 case PAGE_NEW_PLAYER:
                     rootView = inflater.inflate(R.layout.fragment_schedule_library, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "player");
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "new_player");
                     break;
                 case PAGE_PLAYER:
                     rootView = inflater.inflate(R.layout.fragment_schedule_old_player, container, false);
-                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "old_player");
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "player");
                     break;
                 case PAGE_ONTRACK:
                     rootView = inflater.inflate(R.layout.fragment_schedule_ontrack, container, false);
