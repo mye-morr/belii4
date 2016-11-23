@@ -27,7 +27,8 @@
         android:id="@+id/btnOnTrack2"
         android:textAllCaps="false"
         android:textOff="Toda"
-        android:textOn="Toda" />
+        android:textOn="Toda"
+        android:checked="true" />
 
 </LinearLayout>
 
