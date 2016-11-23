@@ -103,10 +103,10 @@ public class SchedulePopulator {
         else if(category.equals("library")) {
             setup_library(rootView);
         }
-        else if(category.equals("player")) {
+        else if(category.equals("new_player")) {
             setup_new_player(rootView);
         }
-        else if(category.equals("old_player")) {
+        else if(category.equals("player")) {
             setup_player(rootView);
         }
     }
