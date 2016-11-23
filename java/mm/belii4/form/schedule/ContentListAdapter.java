@@ -12,14 +12,15 @@ import java.util.List;
 
 import mm.belii4.R;
 import mm.belii4.data.core.Content;
+import mm.belii4.util.DynaArray;
 
-public class ContentListAdapter extends ArrayAdapter<Content> {
+public class ContentListAdapter extends ArrayAdapter<DynaArray.InternalItem> {
 
     private int resourceId;
-    private List<Content> contents;
+    private DynaArray.InternalItem[] contents;
     private Context context;
 
-    public ContentListAdapter(Context context, List<Content> contents) {
+    public ContentListAdapter(Context context, DynaArray.InternalItem[] contents) {
         super(context, R.layout.list_item_schedule, contents);
         this.context = context;
         this.contents = contents;
@@ -30,9 +31,9 @@ public class ContentListAdapter extends ArrayAdapter<Content> {
     public View getView(final int position, View convertView, ViewGroup parent) {
         convertView = initView(convertView);
 
-        Content content = contents.get(position);
+        DynaArray.InternalItem content = contents[position];
 
-        ((TextView) convertView.findViewById(R.id.schedule_item_summary)).setText(content.getContent());
+        ((TextView) convertView.findViewById(R.id.schedule_item_summary)).setText(content.getName());
 
         if(content.get_state().equalsIgnoreCase("active")) {
             ((ImageView) convertView.findViewById(R.id.schedule_item_icon)).setImageResource(R.drawable.schedule_single);

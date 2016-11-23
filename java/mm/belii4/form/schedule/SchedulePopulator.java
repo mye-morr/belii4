@@ -41,6 +41,7 @@ import mm.belii4.data.core.PlayerHelper;
 import mm.belii4.data.core.Schedule;
 import mm.belii4.data.core.ScheduleHelper;
 import mm.belii4.form.NewWizardDialog;
+import mm.belii4.util.DynaArray;
 
 public class SchedulePopulator {
     protected Context context;
@@ -56,6 +57,7 @@ public class SchedulePopulator {
     protected Calendar calSimulate;
 
     protected volatile PlayerTask objCurPlayerTask;
+    private DynaArray dynaArray = new DynaArray();
 
     private static DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -806,11 +808,25 @@ public class SchedulePopulator {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 final NonSched nsPlayer = (NonSched)listViewItems.getItemAtPosition(i);
 
-                List<SearchEntry> keys = new ArrayList<SearchEntry>();
-                keys.add(new SearchEntry(SearchEntry.Type.STRING, "playerid", SearchEntry.Search.EQUAL, nsPlayer.get_id()));
+                String arrayid = nsPlayer.get_id();
+                if (dynaArray.containsContributingArray(arrayid)) {
+                    dynaArray.removeContributingArray(arrayid);
+                } else {
+                    List<SearchEntry> keys = new ArrayList<SearchEntry>();
+                    keys.add(new SearchEntry(SearchEntry.Type.STRING, "playerid", SearchEntry.Search.EQUAL, nsPlayer.get_id()));
+                    List<Content> listContent = contentHelper.find(keys);
+                    dynaArray.addContributingArray(listContent, 1, arrayid, 0.6, 0.05);
+                }
+                listViewContent.setAdapter(new ContentListAdapter(context, dynaArray.currentInternalItemArray()));
+            }
+        });
 
-                List<Content> listContent = (List<Content>) (List<?>) contentHelper.find(keys);
-                listViewContent.setAdapter(new ContentListAdapter(context, listContent));
+        listViewContent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                final DynaArray.InternalItem item = (DynaArray.InternalItem) listViewContent.getItemAtPosition(i);
+                dynaArray.removeContributingArray(item.getArrayId());
+                listViewContent.setAdapter(new ContentListAdapter(context, dynaArray.currentInternalItemArray()));
             }
         });
     }
