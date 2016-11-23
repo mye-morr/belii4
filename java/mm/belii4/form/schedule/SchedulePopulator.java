@@ -31,6 +31,8 @@ import mm.belii4.MainActivity;
 import mm.belii4.R;
 import mm.belii4.data.DatabaseHelper;
 import mm.belii4.data.SearchEntry;
+import mm.belii4.data.core.Content;
+import mm.belii4.data.core.ContentHelper;
 import mm.belii4.data.core.Games;
 import mm.belii4.data.core.GamesHelper;
 import mm.belii4.data.core.NonSched;
@@ -49,6 +51,7 @@ public class SchedulePopulator {
     protected NonSchedHelper nonSchedHelper;
     protected GamesHelper gamesHelper;
     protected PlayerHelper playerHelper;
+    protected ContentHelper contentHelper;
     protected DatabaseHelper databaseHelper;
     protected Calendar calSimulate;
 
@@ -76,6 +79,7 @@ public class SchedulePopulator {
         this.nonSchedHelper = DatabaseHelper.getInstance().getHelper(NonSchedHelper.class);
         this.gamesHelper = DatabaseHelper.getInstance().getHelper(GamesHelper.class);
         this.playerHelper = DatabaseHelper.getInstance().getHelper(PlayerHelper.class);
+        this.contentHelper = DatabaseHelper.getInstance().getHelper(ContentHelper.class);
         this.databaseHelper = DatabaseHelper.getInstance();
         this.calSimulate = Calendar.getInstance();
     }
@@ -97,10 +101,10 @@ public class SchedulePopulator {
             setup_games(rootView);
         }
         else if(category.equals("library")) {
-            setup_library(rootView, "library");
+            setup_library(rootView);
         }
         else if(category.equals("player")) {
-            setup_library(rootView, "player");
+            setup_player(rootView);
         }
         else if(category.equals("old_player")) {
             setup_old_player(rootView);
@@ -757,38 +761,72 @@ public class SchedulePopulator {
         });
     }
 
-    public void setup_library(final View rootView, final String sCategory) {
+    public void setup_player(final View rootView) {
+
+        final ListView listViewSubcat = ((ListView) rootView.findViewById(R.id.schedule_category_list));
+        final ListView listViewItems = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
+        final ListView listViewContent = ((ListView) rootView.findViewById(R.id.schedule_library_list));
+
+        SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
+
+        String sql = "SELECT DISTINCT subcat FROM core_tbl_player ORDER BY subcat";
+        Cursor cursor = database.rawQuery(sql, new String[0]);
+
+        List<String> listSubcat = new ArrayList<String>();
+        if (cursor.moveToFirst()) {
+            do {
+                listSubcat.add(cursor.getString(0));
+            } while (cursor.moveToNext());
+        }
+
+        //fix - android.database.CursorWindowAllocationException Start
+        cursor.close();
+        //fix - android.database.CursorWindowAllocationException End
+
+        ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
+        listViewSubcat.setAdapter(adapterSubcat);
+
+        listViewSubcat.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String sSubcat = listViewSubcat.getItemAtPosition(i).toString();
+
+                ((MainActivity) context).sSelectedPlayerSubcat = sSubcat;
+
+                List<SearchEntry> keys = new ArrayList<SearchEntry>();
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubcat));
+
+                List<NonSched> listNonSched = (List<NonSched>) (List<?>) playerHelper.find(keys);
+                listViewItems.setAdapter(new NonSchedListAdapter(context, listNonSched));
+            }
+        });
+
+        listViewItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                final NonSched nsPlayer = (NonSched)listViewItems.getItemAtPosition(i);
+
+                List<SearchEntry> keys = new ArrayList<SearchEntry>();
+                keys.add(new SearchEntry(SearchEntry.Type.STRING, "playerid", SearchEntry.Search.EQUAL, nsPlayer.get_id()));
+
+                List<Content> listContent = (List<Content>) (List<?>) contentHelper.find(keys);
+                listViewContent.setAdapter(new ContentListAdapter(context, listContent));
+            }
+        });
+    }
+
+    public void setup_library(final View rootView) {
 
         final ListView listViewCategory = ((ListView) rootView.findViewById(R.id.schedule_category_list));
         final ListView listViewSubcategory = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
         final ListView listViewLibrary = ((ListView) rootView.findViewById(R.id.schedule_library_list));
 
-        String sCat = "";
-        String sSubcat = "";
-        String sTableName = "";
-
-        boolean bIsLibrary = false;
-        if (sCategory.equalsIgnoreCase("LIBRARY")) {
-            bIsLibrary = true;
-        }
-
-        final boolean isLibrary = bIsLibrary;
-
-        if (isLibrary) {
-            sCat = ((MainActivity) (context)).sSelectedLibraryCat;
-            sSubcat = ((MainActivity) (context)).sSelectedLibrarySubcat;
-            sTableName = "core_tbl_nonsched";
-        } else {
-            sCat = ((MainActivity) (context)).sSelectedPlayerCat;
-            sSubcat = ((MainActivity) (context)).sSelectedPlayerSubcat;
-            sTableName = "core_tbl_player";
-        }
-
-        final String tableName = sTableName;
+        String sCat = ((MainActivity) (context)).sSelectedLibraryCat;
+        String sSubcat = ((MainActivity) (context)).sSelectedLibrarySubcat;
 
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
 
-        String sql = "SELECT DISTINCT cat FROM " + sTableName +" ORDER BY cat";
+        String sql = "SELECT DISTINCT cat FROM core_tbl_nonsched ORDER BY cat";
         Cursor cursor = database.rawQuery(sql, new String[0]);
 
         List<String> listCat = new ArrayList<String>();
@@ -806,7 +844,7 @@ public class SchedulePopulator {
         listViewCategory.setAdapter(adapterCat);
 
         if (sCat.length() > 0) {
-            String sql2 = "SELECT DISTINCT subcat FROM " + sTableName + " WHERE cat='" + sCat + "' ORDER BY subcat";
+            String sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCat + "' ORDER BY subcat";
 
             SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
             Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
@@ -834,23 +872,13 @@ public class SchedulePopulator {
             }
 
             List<NonSched> listNonSched;
-            if(isLibrary) {
-                listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
-            }
-            else {
-                listNonSched = (List<NonSched>) (List<?>) playerHelper.find(keys);
-            }
+            listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
 
             listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
         }
         else {
             List<NonSched> listNonSched;
-            if(isLibrary) {
-                listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat","library");
-            }
-            else {
-                listNonSched = (List<NonSched>) (List<?>) playerHelper.findAll();
-            }
+            listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat","library");
 
             listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
         }
@@ -860,16 +888,10 @@ public class SchedulePopulator {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             String sCat = listViewCategory.getItemAtPosition(i).toString();
 
-            if(isLibrary) {
-                ((MainActivity) context).sSelectedLibraryCat = sCat;
-                ((MainActivity) context).sSelectedLibrarySubcat = "";
-            }
-            else {
-                ((MainActivity) context).sSelectedPlayerCat = sCat;
-                ((MainActivity) context).sSelectedPlayerSubcat = "";
-            }
+            ((MainActivity) context).sSelectedLibraryCat = sCat;
+            ((MainActivity) context).sSelectedLibrarySubcat = "";
 
-            String sql2 = "SELECT DISTINCT subcat FROM " + tableName + " WHERE cat='" + sCat + "' ORDER BY subcat";
+            String sql2 = "SELECT DISTINCT subcat FROM core_tbl_nonsched WHERE cat='" + sCat + "' ORDER BY subcat";
 
             SQLiteDatabase database2 = databaseHelper.getReadableDatabase();
             Cursor cursor2 = database2.rawQuery(sql2, new String[0]);
@@ -888,13 +910,7 @@ public class SchedulePopulator {
             ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
             listViewSubcategory.setAdapter(adapterSubcat);
 
-            List<NonSched> nonSched;
-            if(isLibrary) {
-                nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat);
-            }
-            else {
-                nonSched = (List<NonSched>) (List<?>) playerHelper.findBy("cat", sCat);
-            }
+            List<NonSched> nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat);
 
             listViewLibrary.setAdapter(new NonSchedListAdapter(context, nonSched));
             }
@@ -905,24 +921,14 @@ public class SchedulePopulator {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String sSubcat = listViewSubcategory.getItemAtPosition(i).toString();
 
-                if(isLibrary) {
-                    ((MainActivity) context).sSelectedLibrarySubcat = sSubcat;
-                }
-                else {
-                    ((MainActivity) context).sSelectedPlayerSubcat = sSubcat;
-                }
+                ((MainActivity) context).sSelectedLibrarySubcat = sSubcat;
 
                 List<SearchEntry> keys = new ArrayList<SearchEntry>();
                 keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, ((MainActivity)context).sSelectedLibraryCat));
                 keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubcat));
 
                 List<NonSched> listNonSched;
-                if(isLibrary) {
-                    listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
-                }
-                else {
-                    listNonSched = (List<NonSched>) (List<?>) playerHelper.find(keys);
-                }
+                listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
 
                 listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
             }
@@ -935,9 +941,7 @@ public class SchedulePopulator {
               AlertDialog.Builder alertOptions = new AlertDialog.Builder(context);
               List<String> optsList = new ArrayList<String>();
 
-              if(isLibrary) {
-                  optsList.add("Add to Player");
-              }
+              optsList.add("Add to Player");
 
               optsList.add("Edit");
               if (st.get_state().equalsIgnoreCase("active")) {
@@ -960,9 +964,12 @@ public class SchedulePopulator {
                       else if (options[i].equalsIgnoreCase("ADD TO PLAYER")) {
                           DatabaseHelper dh = DatabaseHelper.getInstance();
                           SQLiteDatabase database = dh.getWritableDatabase();
+
+                          String sNewId = java.util.UUID.randomUUID().toString();
+
                           ContentValues contentValues = st.getContentValues();
                           contentValues.remove("_id");
-                          contentValues.put("_id", java.util.UUID.randomUUID().toString());
+                          contentValues.put("_id", sNewId);
                           contentValues.put("wt", "0");
                           contentValues.put("extpct", "0");
                           contentValues.put("extthr", "0");
@@ -975,18 +982,23 @@ public class SchedulePopulator {
                               Toast.makeText(context, "Adding to Player failed.", Toast.LENGTH_SHORT).show();
                           }
 
+                          String[] sxLines = st.getContent().split("\\n");
+                          for(int j=0; j<sxLines.length; j++) {
+                              ContentValues cv = new ContentValues();
+                              cv.put("_state", "active");
+                              cv.put("playerid", sNewId);
+                              cv.put("content", sxLines[j]);
+                              cv.put("weight", "0.1");
+
+                              database.insert("core_tbl_content", null, cv);
+                          }
                       }
                       else if (options[i].equalsIgnoreCase("DELETE")) {
                           Toast.makeText(context, "Schedule deleted.", Toast.LENGTH_SHORT).show();
 
-                          if (isLibrary){
-                              nonSchedHelper.delete(st.get_id());
-                          }
-                          else {
-                              playerHelper.delete(st.get_id());
-                          }
+                          nonSchedHelper.delete(st.get_id());
 
-                          ((MainActivity) context).getSchedulePopulator().resetup(sCategory);
+                          ((MainActivity) context).getSchedulePopulator().resetup();
                           dialogInterface.dismiss();
 
                       }
