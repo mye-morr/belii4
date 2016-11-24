@@ -9,6 +9,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.PowerManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -41,6 +43,7 @@ import mm.belii4.data.core.PlayerHelper;
 import mm.belii4.data.core.Schedule;
 import mm.belii4.data.core.ScheduleHelper;
 import mm.belii4.form.NewWizardDialog;
+import mm.belii4.util.BaseItemTouchHelperCallback;
 import mm.belii4.util.DynaArray;
 
 public class SchedulePopulator {
@@ -767,7 +770,7 @@ public class SchedulePopulator {
 
         final ListView listViewSubcat = ((ListView) rootView.findViewById(R.id.schedule_category_list));
         final ListView listViewItems = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
-        final ListView listViewContent = ((ListView) rootView.findViewById(R.id.schedule_library_list));
+        final ListView listViewContent = ((ListView) rootView.findViewById(R.id.schedule_new_player_list));
 
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
 
@@ -835,7 +838,11 @@ public class SchedulePopulator {
 
         final ListView listViewCategory = ((ListView) rootView.findViewById(R.id.schedule_category_list));
         final ListView listViewSubcategory = ((ListView) rootView.findViewById(R.id.schedule_subcategory_list));
-        final ListView listViewLibrary = ((ListView) rootView.findViewById(R.id.schedule_library_list));
+        final RecyclerView listViewLibrary = ((RecyclerView) rootView.findViewById(R.id.schedule_library_list));
+        final NonSchedRecyclerViewAdapter libViewAdapter = new NonSchedRecyclerViewAdapter(context);
+        ItemTouchHelper itemTouchHelper = libViewAdapter.getItemTouchHelper();
+        itemTouchHelper.attachToRecyclerView(listViewLibrary);
+        listViewLibrary.setAdapter(libViewAdapter);
 
         String sCat = ((MainActivity) (context)).sSelectedLibraryCat;
         String sSubcat = ((MainActivity) (context)).sSelectedLibrarySubcat;
@@ -890,13 +897,13 @@ public class SchedulePopulator {
             List<NonSched> listNonSched;
             listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
 
-            listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
+            libViewAdapter.setList(listNonSched);
         }
         else {
             List<NonSched> listNonSched;
             listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat","library");
 
-            listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
+            libViewAdapter.setList(listNonSched);
         }
 
         listViewCategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -928,7 +935,7 @@ public class SchedulePopulator {
 
             List<NonSched> nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat);
 
-            listViewLibrary.setAdapter(new NonSchedListAdapter(context, nonSched));
+            libViewAdapter.setList(nonSched);
             }
         });
 
@@ -946,92 +953,9 @@ public class SchedulePopulator {
                 List<NonSched> listNonSched;
                 listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
 
-                listViewLibrary.setAdapter(new NonSchedListAdapter(context, listNonSched));
+                libViewAdapter.setList(listNonSched);
             }
         });
-
-        listViewLibrary.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-              @Override
-              public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-              final NonSched st = (NonSched) listViewLibrary.getItemAtPosition(i);
-              AlertDialog.Builder alertOptions = new AlertDialog.Builder(context);
-              List<String> optsList = new ArrayList<String>();
-
-              optsList.add("Add to Player");
-
-              optsList.add("Edit");
-              if (st.get_state().equalsIgnoreCase("active")) {
-                  optsList.add("Deactivate");
-              } else if (st.get_state().equalsIgnoreCase("inactive")) {
-                  optsList.add("Activate");
-              }
-
-              optsList.add("Delete");
-
-              final String[] options = optsList.toArray(new String[]{});
-              alertOptions.setAdapter(new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, android.R.id.text1, options), new DialogInterface.OnClickListener() {
-                  @Override
-                  public void onClick(DialogInterface dialogInterface, int i) {
-                      if (options[i].equalsIgnoreCase("EDIT")) {
-
-                          new NewWizardDialog(context, st).show();
-
-                      }
-                      else if (options[i].equalsIgnoreCase("ADD TO PLAYER")) {
-                          DatabaseHelper dh = DatabaseHelper.getInstance();
-                          SQLiteDatabase database = dh.getWritableDatabase();
-
-                          String sNewId = java.util.UUID.randomUUID().toString();
-
-                          ContentValues contentValues = st.getContentValues();
-                          contentValues.remove("_id");
-                          contentValues.put("_id", sNewId);
-                          contentValues.put("wt", "0");
-                          contentValues.put("extpct", "0");
-                          contentValues.put("extthr", "0");
-
-                          Log.i("DB", "Insert into " + "core_tbl_player" + ":" + contentValues.getAsString("_id"));
-                          if (database.insert("core_tbl_player", null, contentValues) > 0) {
-                              Toast.makeText(context, "Added to Player.", Toast.LENGTH_SHORT).show();
-                          }
-                          else {
-                              Toast.makeText(context, "Adding to Player failed.", Toast.LENGTH_SHORT).show();
-                          }
-
-                          String[] sxLines = st.getContent().split("\\n");
-                          for(int j=0; j<sxLines.length; j++) {
-                              ContentValues cv = new ContentValues();
-                              cv.put("_state", "active");
-                              cv.put("playerid", sNewId);
-                              cv.put("content", sxLines[j]);
-                              cv.put("weight", "0.1");
-
-                              database.insert("core_tbl_content", null, cv);
-                          }
-                      }
-                      else if (options[i].equalsIgnoreCase("DELETE")) {
-                          Toast.makeText(context, "Schedule deleted.", Toast.LENGTH_SHORT).show();
-
-                          nonSchedHelper.delete(st.get_id());
-
-                          ((MainActivity) context).getSchedulePopulator().resetup();
-                          dialogInterface.dismiss();
-
-                      }
-                  }
-              });
-
-              alertOptions.setCancelable(true);
-              alertOptions.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                  @Override
-                  public void onClick(DialogInterface dialog, int which) {
-                      dialog.cancel();
-                  }
-              });
-              alertOptions.show();
-
-          }
-      });
     }
 
     public void setup_player(final View rootView) {
