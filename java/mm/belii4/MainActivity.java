@@ -336,7 +336,7 @@ public class MainActivity extends ActionBarActivity
                     ((MainActivity) context).getSchedulePopulator().setup(rootView, "library");
                     break;
                 case PAGE_NEW_PLAYER:
-                    rootView = inflater.inflate(R.layout.fragment_schedule_library, container, false);
+                    rootView = inflater.inflate(R.layout.fragment_schedule_new_player, container, false);
                     ((MainActivity) context).getSchedulePopulator().setup(rootView, "new_player");
                     break;
                 case PAGE_PLAYER:
