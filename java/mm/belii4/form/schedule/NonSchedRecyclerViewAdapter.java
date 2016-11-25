@@ -5,6 +5,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
+import android.support.v4.os.AsyncTaskCompat;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -41,6 +43,7 @@ public class NonSchedRecyclerViewAdapter extends RecyclerView.Adapter<NonSchedRe
     private Context context;
     private ItemTouchHelper itemTouchHelper;
     private List<NonSched> nonSchedList;
+    private NonSchedHelper nonSchedHelper = DatabaseHelper.getInstance().getHelper(NonSchedHelper.class);
 
     public NonSchedRecyclerViewAdapter(Context context) {
         this.context = context;
@@ -61,6 +64,7 @@ public class NonSchedRecyclerViewAdapter extends RecyclerView.Adapter<NonSchedRe
     public boolean onItemMove(int fromPosition, int toPosition) {
         Collections.swap(nonSchedList, fromPosition, toPosition);
         notifyItemMoved(fromPosition, toPosition);
+        new SaveOrderTask().execute();
         return true;
     }
 
@@ -173,7 +177,6 @@ public class NonSchedRecyclerViewAdapter extends RecyclerView.Adapter<NonSchedRe
                             else if (options[i].equalsIgnoreCase("DELETE")) {
                                 Toast.makeText(context, "Schedule deleted.", Toast.LENGTH_SHORT).show();
 
-                                NonSchedHelper nonSchedHelper = DatabaseHelper.getInstance().getHelper(NonSchedHelper.class);
                                 nonSchedHelper.delete(item.get_id());
 
                                 ((MainActivity) context).getSchedulePopulator().resetup();
@@ -219,6 +222,22 @@ public class NonSchedRecyclerViewAdapter extends RecyclerView.Adapter<NonSchedRe
             }else{
                 itemIconView.setImageResource(R.drawable.schedule_single_inactive);
             }
+        }
+    }
+
+    class SaveOrderTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            NonSched[] array = nonSchedList.toArray(new NonSched[0]);
+            for (int i = 0 ; i < array.length ; i++) {
+                NonSched nonSched = array[i];
+                String iprio = "" + i;
+                if (!iprio.equals(nonSched.getIprio())) {
+                    nonSched.setIprio(iprio);
+                    nonSchedHelper.update(nonSched);
+                }
+            }
+            return null;
         }
     }
 }
