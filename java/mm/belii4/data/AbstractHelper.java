@@ -161,6 +161,42 @@ public abstract class AbstractHelper <T extends AbstractModel> {
         return models;
     }
 
+    public List<T> find(List<SearchEntry> keys, String sOrderBy){
+        SQLiteDatabase database = this.databaseHelper.getReadableDatabase();
+        String whereClause = "";
+        List<String> whereArgs = new ArrayList<String>();
+        for (int i = 0; i < keys.size(); i++) {
+            SearchEntry searchEntry = keys.get(i);
+            if(i > 0){
+                whereClause += " AND ";
+            }else if(i == 0 ){
+                whereClause += " WHERE ";
+            }
+            whereClause += searchEntry.toString();
+            if(searchEntry.getValue() instanceof List){
+                whereArgs.addAll((List)searchEntry.getValue());
+            }else {
+                whereArgs.add(searchEntry.getValue().toString());
+            }
+        }
+        String sql = "SELECT * FROM " + this.tableName + whereClause + " " + sOrderBy;
+        Log.i("DB", sql);
+        Cursor cursor = database.rawQuery(sql, whereArgs.toArray(new String[whereArgs.size()]));
+
+        List<T> models = new ArrayList<T>();
+        if(cursor.moveToFirst()){
+            do {
+                T model = getModelInstance();
+                model.populateWith(cursor, this.columns);
+                models.add(model);
+            } while (cursor.moveToNext());
+        }
+        //fix - android.database.CursorWindowAllocationException Start
+
+        //fix - android.database.CursorWindowAllocationException End
+        return models;
+    }
+
     // single record using SearchEntry key
     public T get(List<SearchEntry> keys){
         SQLiteDatabase database = this.databaseHelper.getReadableDatabase();

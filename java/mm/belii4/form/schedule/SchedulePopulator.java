@@ -894,15 +894,14 @@ public class SchedulePopulator {
                 keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubcat));
             }
 
-            List<NonSched> listNonSched;
-            listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
-
+            List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys, "ORDER BY iprio");
             libViewAdapter.setList(listNonSched);
         }
         else {
-            List<NonSched> listNonSched;
-            listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat","library");
+            List<SearchEntry> keys = new ArrayList<SearchEntry>();
+            keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, "library"));
 
+            List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys, "ORDER BY iprio");
             libViewAdapter.setList(listNonSched);
         }
 
@@ -933,9 +932,11 @@ public class SchedulePopulator {
             ArrayAdapter<String> adapterSubcat = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, listSubcat);
             listViewSubcategory.setAdapter(adapterSubcat);
 
-            List<NonSched> nonSched = (List<NonSched>) (List<?>) nonSchedHelper.findBy("cat", sCat);
+            List<SearchEntry> keys = new ArrayList<SearchEntry>();
+            keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, sCat));
 
-            libViewAdapter.setList(nonSched);
+            List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys, "ORDER BY iprio");
+            libViewAdapter.setList(listNonSched);
             }
         });
 
@@ -950,9 +951,7 @@ public class SchedulePopulator {
                 keys.add(new SearchEntry(SearchEntry.Type.STRING, "cat", SearchEntry.Search.EQUAL, ((MainActivity)context).sSelectedLibraryCat));
                 keys.add(new SearchEntry(SearchEntry.Type.STRING, "subcat", SearchEntry.Search.EQUAL, sSubcat));
 
-                List<NonSched> listNonSched;
-                listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys);
-
+                List<NonSched> listNonSched = (List<NonSched>) (List<?>) nonSchedHelper.find(keys, "ORDER BY iprio");
                 libViewAdapter.setList(listNonSched);
             }
         });
