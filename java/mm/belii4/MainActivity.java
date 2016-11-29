@@ -16,6 +16,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.facebook.CallbackManager;
+
 import mm.belii4.data.DatabaseHelper;
 import mm.belii4.data.core.ContactItemHelper;
 import mm.belii4.form.history.HistoryPopulator;
@@ -363,6 +365,13 @@ public class MainActivity extends ActionBarActivity
                     break;
             }
             return rootView;
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            super.onActivityResult(requestCode, resultCode, data);
+            CallbackManager callbackManager = ((MyApplication)getActivity().getApplication()).getCallbackManager();
+            callbackManager.onActivityResult(requestCode, resultCode, data);
         }
 
         @Override
