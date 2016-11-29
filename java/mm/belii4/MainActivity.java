@@ -29,13 +29,14 @@ public class MainActivity extends ActionBarActivity
     public static final int PAGE_EVENTS = 1;
     public static final int PAGE_CONTACTS = 2;
     public static final int PAGE_HISTORY = 3;
-    public static final int PAGE_GAMES = 4;
-    public static final int PAGE_LIBRARY = 5;
-    public static final int PAGE_NEW_PLAYER = 6;
-    public static final int PAGE_PLAYER = 7;
-    public static final int PAGE_ONTRACK = 8;
+    public static final int PAGE_FB_INTEGRATE = 4;
+    public static final int PAGE_GAMES = 5;
+    public static final int PAGE_LIBRARY = 6;
+    public static final int PAGE_NEW_PLAYER = 7;
+    public static final int PAGE_PLAYER = 8;
+    public static final int PAGE_ONTRACK = 9;
 
-    public static final int PAGE_SETTING = 9;
+    public static final int PAGE_SETTING = 10;
     public static final int SETTING_RESULT = 2;
 
     /**
@@ -164,8 +165,13 @@ public class MainActivity extends ActionBarActivity
                 menuResource = R.menu.menu_history;
                 break;
 
+            case PAGE_FB_INTEGRATE:
+                mTitle = getString(R.string.title_section_fb_integrate);
+                menuResource = R.menu.menu_blank;
+                break;
+
             case PAGE_GAMES:
-                mTitle = getString(R.string.title_section_game);
+                mTitle = getString(R.string.title_section_games);
                 menuResource = R.menu.menu_games;
                 break;
 
@@ -326,6 +332,10 @@ public class MainActivity extends ActionBarActivity
                 case PAGE_HISTORY:
                     rootView = inflater.inflate(R.layout.fragment_overview, container, false);
                     ((MainActivity) context).getHistoryPopulator().setup(rootView, "history");
+                    break;
+                case PAGE_FB_INTEGRATE:
+                    rootView = inflater.inflate(R.layout.fragment_fb_integrate, container, false);
+                    ((MainActivity) context).getSchedulePopulator().setup(rootView, "fb_integrate");
                     break;
                 case PAGE_GAMES:
                     rootView = inflater.inflate(R.layout.fragment_schedule, container, false);

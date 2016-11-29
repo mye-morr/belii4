@@ -106,7 +106,8 @@ public class DrawerFragment extends Fragment {
         drawerItems.add(new DrawerItem(R.string.title_section_events, R.drawable.drawer_schedule));
         drawerItems.add(new DrawerItem(R.string.title_section_contacts, R.drawable.drawer_schedule));
         drawerItems.add(new DrawerItem(R.string.title_section_history, R.drawable.drawer_history));
-        drawerItems.add(new DrawerItem(R.string.title_section_game, R.drawable.drawer_setting));
+        drawerItems.add(new DrawerItem(R.string.title_section_fb_integrate, R.drawable.drawer_setting));
+        drawerItems.add(new DrawerItem(R.string.title_section_games, R.drawable.drawer_setting));
         drawerItems.add(new DrawerItem(R.string.title_section_library, R.drawable.drawer_setting));
         drawerItems.add(new DrawerItem(R.string.title_section_new_player, R.drawable.drawer_setting));
         drawerItems.add(new DrawerItem(R.string.title_section_player, R.drawable.drawer_setting));

@@ -1,7 +1,6 @@
 package mm.belii4.form.schedule;
 
 import android.app.AlertDialog;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,7 +10,6 @@ import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -43,7 +41,6 @@ import mm.belii4.data.core.PlayerHelper;
 import mm.belii4.data.core.Schedule;
 import mm.belii4.data.core.ScheduleHelper;
 import mm.belii4.form.NewWizardDialog;
-import mm.belii4.util.BaseItemTouchHelperCallback;
 import mm.belii4.util.DynaArray;
 
 public class SchedulePopulator {
@@ -96,6 +93,9 @@ public class SchedulePopulator {
         if(category.equals("ontrack")) {
             setup_ontrack(rootView);
         }
+        else if(category.equals("fb_integrate")) {
+            setup_fb_integrate(rootView);
+        }
         else if(category.equals("events")) {
             setup_events(rootView);
         }
@@ -114,6 +114,10 @@ public class SchedulePopulator {
         else if(category.equals("player")) {
             setup_player(rootView);
         }
+    }
+
+    public void setup_fb_integrate(final View rootView) {
+
     }
 
     public void setup_games(final View rootView) {

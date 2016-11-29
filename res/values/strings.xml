@@ -5,7 +5,8 @@
     <string name="title_section_events">Events</string>
     <string name="title_section_contacts">Contacts</string>
     <string name="title_section_history">History</string>
-    <string name="title_section_game">Games</string>
+    <string name="title_section_fb_integrate">Fb Integrate</string>
+    <string name="title_section_games">Games</string>
     <string name="title_section_library">Library</string>
     <string name="title_section_new_player">New Player</string>
     <string name="title_section_player">Player</string>
