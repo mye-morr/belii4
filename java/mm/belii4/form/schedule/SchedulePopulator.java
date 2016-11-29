@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.support.v4.app.Fragment;
@@ -26,8 +27,15 @@ import android.widget.ToggleButton;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.facebook.share.ShareApi;
+import com.facebook.share.internal.ShareFeedContent;
+import com.facebook.share.model.ShareContent;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.model.ShareOpenGraphContent;
+import com.facebook.share.widget.ShareDialog;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -133,12 +141,35 @@ public class SchedulePopulator {
         Fragment fragment = ((MainActivity)context).getSupportFragmentManager().findFragmentById(R.id.container);
         loginButton.setFragment(fragment);
 
+        final View postView = rootView.findViewById(R.id.post_button);
+        postView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ShareLinkContent linkContent = new ShareLinkContent.Builder()
+                        .setContentUrl (Uri.parse("http://www.google.com"))
+                        .setContentTitle("Hello Facebook")
+                        .setContentDescription(
+                                "The 'Hello Facebook' sample  showcases simple Facebook integration")
+                        .build();
+                ShareDialog shareDialog = new ShareDialog((MainActivity)context);
+                shareDialog.show(linkContent);
+            }
+        });
+
+        final View postLayoutView = rootView.findViewById(R.id.post_layout);
+        Profile profile = Profile.getCurrentProfile();
+        if (profile != null) {
+            // user has logged in
+            postLayoutView.setVisibility(View.VISIBLE);
+        }
+
         CallbackManager callbackManager = ((MyApplication)((MainActivity) context).getApplication()).getCallbackManager();
         // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.d("Test", "onSuccess");
+                postLayoutView.setVisibility(View.VISIBLE);
             }
 
             @Override

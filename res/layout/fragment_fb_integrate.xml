@@ -13,4 +13,20 @@
         android:layout_marginTop="30dp"
         android:layout_marginBottom="30dp" />
 
+    <LinearLayout
+        android:id="@+id/post_layout"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="invisible">
+
+        <Button
+            android:id="@+id/post_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Post"/>
+
+    </LinearLayout>
+
 </LinearLayout>
